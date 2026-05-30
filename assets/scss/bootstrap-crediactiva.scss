@@ -1,0 +1,26 @@
+// =============================================================================
+// CrediActiva — Compilación completa con Bootstrap 5
+// Requiere: npm install bootstrap sass
+// Compilar: npx sass assets/scss/bootstrap-crediactiva.scss assets/css/crediactiva.bundle.css --load-path=node_modules
+// =============================================================================
+
+@import "variables";
+
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities/api";
+
+@import "typography";
+@import "bootstrap-custom";

@@ -1,0 +1,60 @@
+.admin-page__header h1 {
+  color: #002855;
+  font-weight: 700;
+}
+
+.admin-card {
+  border: none;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.admin-card__header {
+  background: #002855;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+}
+
+.admin-kpi {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  border-left: 4px solid #002855;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.08);
+  height: 100%;
+
+  strong {
+    display: block;
+    font-size: 1.65rem;
+    color: #002855;
+  }
+
+  small {
+    color: #6b7280;
+  }
+
+  &--ok {
+    border-left-color: #00703c;
+  }
+
+  &--warn {
+    border-left-color: #f59e0b;
+  }
+
+  &--danger {
+    border-left-color: #dc3545;
+  }
+}
+
+.admin-kpi__label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+}
+
+.admin-list .list-group-item.active {
+  background: #00703c;
+  border-color: #00703c;
+}

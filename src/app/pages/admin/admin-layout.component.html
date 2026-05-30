@@ -1,0 +1,35 @@
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <a class="admin-sidebar__brand" routerLink="/">CREDI ACTIVA</a>
+    <p class="admin-sidebar__role">Panel administrativo</p>
+
+    <nav class="admin-sidebar__nav">
+      <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <i class="bi bi-speedometer2"></i> Dashboard general
+      </a>
+      <a routerLink="/admin/socios" routerLinkActive="active">
+        <i class="bi bi-people"></i> Gestión de socios
+      </a>
+      <a routerLink="/admin/prestamos" routerLinkActive="active">
+        <i class="bi bi-bank"></i> Módulo de préstamos
+      </a>
+      <a routerLink="/admin/aportaciones" routerLinkActive="active">
+        <i class="bi bi-cash-coin"></i> Control de aportaciones
+      </a>
+      <a routerLink="/admin/reportes" routerLinkActive="active">
+        <i class="bi bi-file-earmark-bar-graph"></i> Reportes y auditoría
+      </a>
+    </nav>
+
+    <div class="admin-sidebar__user mt-auto">
+      <small>{{ auth.usuario()?.nombres }}</small>
+      <button type="button" class="btn btn-sm btn-outline-light mt-2 w-100" (click)="cerrarSesion()">
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <router-outlet />
+  </main>
+</div>

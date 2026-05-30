@@ -1,0 +1,91 @@
+<div class="admin-page container-fluid py-4">
+  <header class="admin-page__header mb-4">
+    <h1 class="h3 mb-1">Módulo de préstamos</h1>
+    <p class="text-muted mb-0">Evaluación de solicitudes y generación automática de cronogramas</p>
+  </header>
+
+  @if (mensaje()) {
+    <div class="alert" [class.alert-success]="!esError()" [class.alert-danger]="esError()">
+      {{ mensaje() }}
+    </div>
+  }
+
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="card admin-card shadow-sm">
+        <div class="card-header admin-card__header">Solicitudes de crédito</div>
+        <div class="list-group list-group-flush admin-list">
+          @for (s of solicitudes(); track s.id_solicitud) {
+            <button
+              type="button"
+              class="list-group-item list-group-item-action"
+              [class.active]="solicitudSeleccionada()?.id_solicitud === s.id_solicitud"
+              (click)="seleccionarSolicitud(s)"
+            >
+              <div class="d-flex justify-content-between">
+                <strong>DNI {{ s.dni_usuario }}</strong>
+                <span class="badge bg-{{ badgeEval(s.estado_evaluacion) }}">{{ s.estado_evaluacion }}</span>
+              </div>
+              <small class="text-muted">
+                {{ s.tipo_credito }} · {{ s.monto | currency : 'PEN' : 'symbol' : '1.0-0' }} · {{ s.plazo_meses }} meses
+              </small>
+            </button>
+          } @empty {
+            <p class="p-4 text-muted mb-0 text-center">No hay solicitudes registradas</p>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      @if (solicitudSeleccionada(); as sel) {
+        <div class="card admin-card shadow-sm">
+          <div class="card-header admin-card__header d-flex justify-content-between">
+            <span>Evaluación de préstamo</span>
+            <span class="badge bg-{{ badgeEval(sel.estado_evaluacion) }}">{{ sel.estado_evaluacion }}</span>
+          </div>
+          <div class="card-body">
+            <dl class="row small mb-3">
+              <dt class="col-4">DNI</dt><dd class="col-8">{{ sel.dni_usuario }}</dd>
+              <dt class="col-4">Monto</dt><dd class="col-8">{{ sel.monto | currency : 'PEN' : 'symbol' : '1.2-2' }}</dd>
+              <dt class="col-4">Plazo</dt><dd class="col-8">{{ sel.plazo_meses }} meses</dd>
+              <dt class="col-4">Producto</dt><dd class="col-8">{{ sel.tipo_credito }}</dd>
+            </dl>
+            @if (sel.estado_evaluacion === 'PENDIENTE') {
+              <textarea class="form-control mb-3" rows="2" placeholder="Observaciones" [value]="observacionesEval()" (input)="observacionesEval.set($any($event.target).value)"></textarea>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-success flex-fill" [disabled]="cargando()" (click)="evaluar('APROBADO')">Aprobar y generar cronograma</button>
+                <button type="button" class="btn btn-outline-danger" [disabled]="cargando()" (click)="evaluar('RECHAZADO')">Rechazar</button>
+              </div>
+            }
+            @if (sel.cronograma.length > 0) {
+              <h3 class="h6 mt-4">Cronograma de pagos</h3>
+              <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                  <thead>
+                    <tr><th>#</th><th>Vence</th><th>Cuota</th><th>Capital</th><th>Interés</th><th>Saldo</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (c of sel.cronograma; track c.numero_cuota) {
+                      <tr>
+                        <td>{{ c.numero_cuota }}</td>
+                        <td>{{ c.fecha_vencimiento }}</td>
+                        <td>{{ c.cuota | number : '1.2-2' }}</td>
+                        <td>{{ c.capital | number : '1.2-2' }}</td>
+                        <td>{{ c.interes | number : '1.2-2' }}</td>
+                        <td>{{ c.saldo_restante | number : '1.2-2' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="card admin-card shadow-sm">
+          <div class="card-body text-center text-muted py-5">Seleccione una solicitud para evaluar</div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

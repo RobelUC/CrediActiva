@@ -1,0 +1,367 @@
+<div class="ca-landing">
+  <!-- Navbar -->
+  <nav
+    class="ca-navbar navbar navbar-expand-lg py-3"
+    [class.ca-navbar--scrolled]="navScrolled()"
+  >
+    <div class="container">
+      <a class="ca-navbar__brand navbar-brand" routerLink="/">
+        <img
+          class="ca-navbar__logo"
+          src="assets/images/crediactiva-logo.png"
+          alt="CrediActiva"
+          width="44"
+          height="44"
+        />
+        <span class="ca-navbar__brand-text">CREDI ACTIVA</span>
+      </a>
+
+      <button
+        class="navbar-toggler border-0"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#caNavMenu"
+        aria-controls="caNavMenu"
+        aria-expanded="false"
+        aria-label="Abrir menú"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-end" id="caNavMenu">
+        <ul class="navbar-nav align-items-lg-center gap-lg-1">
+          <li class="nav-item">
+            <a class="ca-navbar__link nav-link active" routerLink="/" fragment="inicio">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="ca-navbar__link nav-link" routerLink="/" fragment="nosotros">Nosotros</a>
+          </li>
+          <li class="nav-item">
+            <a class="ca-navbar__link nav-link" routerLink="/" fragment="testimonios">Testimonios</a>
+          </li>
+          <li class="nav-item">
+            <a class="ca-navbar__link nav-link" routerLink="/" fragment="faq">FAQ</a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="ca-navbar__link nav-link"
+              [routerLink]="rutaSimulador()"
+              [queryParams]="queryParamsSimulador()"
+            >
+              Simulador
+            </a>
+          </li>
+          <li class="nav-item ms-lg-2">
+            <a
+              class="ca-btn ca-btn--primary ca-btn--icon"
+              [routerLink]="auth.sesionActiva() && !auth.esAdministrador() ? '/portal' : '/login'"
+              aria-label="Iniciar sesión"
+              title="Portal del socio"
+            >
+              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="ca-hero" id="inicio">
+    <div class="container ca-hero__container">
+      <div class="row align-items-center g-5">
+        <!-- Columna izquierda -->
+        <div class="col-lg-6">
+          <p class="ca-hero__overline">FINANCIERA DE CONFIANZA</p>
+
+          <h1 class="ca-hero__title">
+            <span class="ca-hero__subtitle">Crédito fácil, rápido y seguro</span>
+            para impulsar tus metas.
+          </h1>
+
+          <p class="ca-hero__description">
+            En CREDI ACTIVA conectamos a nuestros socios con soluciones financieras
+            transparentes, accesibles y pensadas para el crecimiento familiar y emprendedor.
+          </p>
+
+          <div class="d-flex flex-wrap gap-3 ca-hero__actions">
+            <a
+              class="ca-btn ca-btn--primary"
+              [routerLink]="rutaSimulador()"
+              [queryParams]="queryParamsSimulador()"
+            >
+              Simular mi crédito
+              <span class="ca-btn__arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="ca-btn ca-btn--outline" routerLink="/login">
+              Ir al Sistema
+            </a>
+          </div>
+        </div>
+
+        <!-- Columna derecha — arte + formulario -->
+        <div class="col-lg-6">
+          <div class="ca-form-art">
+            <div class="ca-form-art__decor" aria-hidden="true">
+              <span class="ca-form-art__orb ca-form-art__orb--1"></span>
+              <span class="ca-form-art__orb ca-form-art__orb--2"></span>
+              <div class="ca-form-art__mock ca-form-art__mock--sm">
+                <span></span><span></span><span class="accent"></span>
+              </div>
+              <div class="ca-form-art__mock ca-form-art__mock--lg">
+                <span></span><span></span><span class="accent"></span><span class="accent short"></span>
+              </div>
+            </div>
+
+            <form class="ca-form-art__form" (submit)="$event.preventDefault()" novalidate>
+              <p class="ca-form-art__form-title">Simula tu crédito</p>
+
+              <div class="mb-3">
+                <label class="form-label" for="hero-monto">Monto (S/.)</label>
+                <input
+                  id="hero-monto"
+                  type="number"
+                  class="form-control ca-form-control"
+                  [class.is-invalid]="montoInvalido()"
+                  [value]="monto()"
+                  min="0"
+                  step="100"
+                  (input)="actualizarMonto($any($event.target).value)"
+                />
+                @if (montoInvalido()) {
+                  <div class="invalid-feedback d-block">
+                    El monto mínimo es S/. {{ MONTO_MINIMO | number : '1.0-0' }}.
+                  </div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="hero-tipo">Tipo de crédito</label>
+                <select
+                  id="hero-tipo"
+                  class="form-select ca-form-control"
+                  [ngModel]="tipoCredito()"
+                  (ngModelChange)="tipoCredito.set($event)"
+                >
+                  @for (tipo of tiposCredito; track tipo) {
+                    <option [ngValue]="tipo">{{ tipo }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label" for="hero-dni">DNI</label>
+                <input
+                  id="hero-dni"
+                  type="text"
+                  class="form-control ca-form-control"
+                  [class.is-invalid]="dniInvalido()"
+                  [value]="dni()"
+                  maxlength="8"
+                  placeholder="12345678"
+                  inputmode="numeric"
+                  (input)="actualizarDni($any($event.target).value)"
+                />
+                @if (dniInvalido()) {
+                  <div class="invalid-feedback d-block">
+                    El DNI debe tener exactamente 8 dígitos.
+                  </div>
+                }
+              </div>
+
+              <a
+                class="ca-btn ca-btn--primary w-100"
+                [routerLink]="rutaSimulador()"
+                [queryParams]="queryParamsSimulador()"
+                [class.disabled]="!formularioListo()"
+                [attr.aria-disabled]="!formularioListo()"
+                tabindex="{{ formularioListo() ? 0 : -1 }}"
+              >
+                Continuar simulación
+              </a>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadísticas -->
+      <div class="row g-3 g-md-4 ca-stats-row">
+        @for (stat of estadisticas; track stat.etiqueta) {
+          <div class="col-6 col-lg-3">
+            <article class="ca-stat-card text-center h-100">
+              <i class="ca-stat-card__icon bi {{ stat.icono }}" aria-hidden="true"></i>
+              <p class="ca-stat-card__value mb-1">{{ stat.valor }}</p>
+              <p class="ca-stat-card__label mb-0">{{ stat.etiqueta }}</p>
+            </article>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Nosotros -->
+  <section class="ca-section ca-nosotros" id="nosotros">
+    <div class="container">
+      <div class="row align-items-center g-5 mb-5">
+        <div class="col-lg-6">
+          <p class="ca-section__eyebrow">Nosotros</p>
+          <h2 class="ca-section__title">
+            Más de <span class="ca-section__accent">12 años</span> impulsando el desarrollo en Junín
+          </h2>
+          <p class="ca-section__lead">
+            CrediActiva es una cooperativa de ahorro y crédito con sede en
+            <strong>Huancayo</strong>, comprometida con el acceso financiero justo para familias,
+            microempresarios y productores de la sierra central.
+          </p>
+          <p class="ca-section__text">
+            Nacimos con la convicción de que el crédito debe ser una herramienta de inclusión,
+            no de exclusión. Hoy atendemos a más de 18,000 socios con productos adaptados a la
+            realidad local: emprendimiento, vivienda y agricultura.
+          </p>
+          <ul class="ca-nosotros__lista">
+            <li><i class="bi bi-geo-alt-fill"></i> Av. Huancavelica 450, Huancayo</li>
+            <li><i class="bi bi-telephone-fill"></i> (064) 381-200</li>
+            <li><i class="bi bi-envelope-fill"></i> contacto@crediactiva.pe</li>
+          </ul>
+        </div>
+        <div class="col-lg-6">
+          <div class="ca-nosotros__card">
+            <h3 class="ca-nosotros__card-title">Nuestra misión</h3>
+            <p class="mb-4">
+              Democratizar el acceso al crédito responsable, con tasas transparentes y
+              acompañamiento humano en cada solicitud.
+            </p>
+            <h3 class="ca-nosotros__card-title">Nuestra visión</h3>
+            <p class="mb-0">
+              Ser la cooperativa de referencia en la región Junín para el 2030, reconocida por
+              la confianza de nuestros socios y el impacto en sus metas de vida.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        @for (valor of valores; track valor.titulo) {
+          <div class="col-md-6 col-lg-3">
+            <article class="ca-valor-card h-100">
+              <i class="ca-valor-card__icon bi {{ valor.icono }}" aria-hidden="true"></i>
+              <h3 class="ca-valor-card__title">{{ valor.titulo }}</h3>
+              <p class="ca-valor-card__text mb-0">{{ valor.descripcion }}</p>
+            </article>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonios / Feedbacks -->
+  <section class="ca-section ca-testimonios" id="testimonios">
+    <div class="container">
+      <div class="text-center mb-5">
+        <p class="ca-section__eyebrow ca-section__eyebrow--light">Testimonios</p>
+        <h2 class="ca-section__title ca-section__title--light">
+          Lo que dicen nuestros <span class="ca-section__accent">socios</span>
+        </h2>
+        <p class="ca-section__lead ca-section__lead--light mx-auto">
+          Experiencias reales de familias y emprendedores que confiaron en CrediActiva.
+        </p>
+      </div>
+
+      <div class="row g-4">
+        @for (t of testimonios; track t.nombre) {
+          <div class="col-md-6 col-lg-3">
+            <article class="ca-testimonio-card h-100">
+              <div class="ca-testimonio-card__stars" aria-label="{{ t.estrellas }} de 5 estrellas">
+                @for (s of estrellasArray(t.estrellas); track s) {
+                  <i class="bi bi-star-fill" aria-hidden="true"></i>
+                }
+                @for (s of estrellasArray(5 - t.estrellas); track s) {
+                  <i class="bi bi-star" aria-hidden="true"></i>
+                }
+              </div>
+              <blockquote class="ca-testimonio-card__text">"{{ t.texto }}"</blockquote>
+              <footer class="ca-testimonio-card__author">
+                <strong>{{ t.nombre }}</strong>
+                <span>{{ t.rol }} · {{ t.ubicacion }}</span>
+              </footer>
+            </article>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Preguntas frecuentes -->
+  <section class="ca-section ca-faq" id="faq">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="text-center mb-5">
+            <p class="ca-section__eyebrow">Preguntas frecuentes</p>
+            <h2 class="ca-section__title">Resolvemos tus <span class="ca-section__accent">dudas</span></h2>
+            <p class="ca-section__lead mx-auto">
+              Información clara sobre créditos, plazos y requisitos. ¿Necesitas más ayuda?
+              <a
+                [routerLink]="rutaSimulador()"
+                [queryParams]="queryParamsSimulador()"
+                class="ca-link"
+              >
+                Simula tu crédito
+              </a>
+              o visítanos en Huancayo.
+            </p>
+          </div>
+
+          <div class="ca-faq__accordion">
+            @for (faq of faqs; track faq.id) {
+              <div class="ca-faq__item" [class.ca-faq__item--open]="faqEstaAbierto(faq.id)">
+                <button
+                  type="button"
+                  class="ca-faq__trigger"
+                  [attr.aria-expanded]="faqEstaAbierto(faq.id)"
+                  (click)="alternarFaq(faq.id)"
+                >
+                  <span>{{ faq.pregunta }}</span>
+                  <i
+                    class="bi"
+                    [class.bi-chevron-down]="!faqEstaAbierto(faq.id)"
+                    [class.bi-chevron-up]="faqEstaAbierto(faq.id)"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+                @if (faqEstaAbierto(faq.id)) {
+                  <div class="ca-faq__body">
+                    <p class="mb-0">{{ faq.respuesta }}</p>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="ca-footer">
+    <div class="container">
+      <div class="row align-items-center gy-3">
+        <div class="col-md-6">
+          <p class="ca-footer__brand mb-1">CREDI ACTIVA</p>
+          <p class="ca-footer__copy mb-0">© {{ anioActual }} Cooperativa de Crédito · Huancayo, Perú</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <nav class="ca-footer__nav">
+            <a routerLink="/" fragment="inicio">Inicio</a>
+            <a routerLink="/" fragment="nosotros">Nosotros</a>
+            <a routerLink="/" fragment="testimonios">Testimonios</a>
+            <a routerLink="/" fragment="faq">FAQ</a>
+            <a [routerLink]="rutaSimulador()" [queryParams]="queryParamsSimulador()">Simulador</a>
+            <a routerLink="/login">Login</a>
+            <a routerLink="/registro">Registrarse</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

@@ -1,0 +1,13 @@
+@import '../auth-card';
+
+.ca-auth-card {
+  max-width: 100%;
+}
+
+@media (min-width: 992px) {
+  :host {
+    display: block;
+    min-width: 520px;
+    margin-left: -2.5rem;
+  }
+}

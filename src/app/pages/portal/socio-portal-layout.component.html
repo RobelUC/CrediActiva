@@ -1,0 +1,42 @@
+<div class="portal-layout">
+  <aside class="portal-sidebar">
+    <a class="portal-sidebar__brand" routerLink="/">CREDI ACTIVA</a>
+    <p class="portal-sidebar__tag">Portal del socio</p>
+
+    @if (auth.usuario(); as u) {
+      <div class="portal-sidebar__user">
+        <i class="bi bi-person-circle"></i>
+        <div>
+          <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
+          <small>DNI {{ u.dni }}</small>
+        </div>
+      </div>
+    }
+
+    <nav class="portal-sidebar__nav">
+      <a routerLink="/portal" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <i class="bi bi-house-door"></i> Resumen de cuenta
+      </a>
+      <a routerLink="/portal/creditos" routerLinkActive="active">
+        <i class="bi bi-credit-card"></i> Mis créditos
+      </a>
+      <a routerLink="/portal/aportes" routerLinkActive="active">
+        <i class="bi bi-clock-history"></i> Historial aportes
+      </a>
+      <a routerLink="/portal/perfil" routerLinkActive="active">
+        <i class="bi bi-person-gear"></i> Perfil de usuario
+      </a>
+      <a routerLink="/simulador" class="portal-sidebar__nav-sim">
+        <i class="bi bi-calculator"></i> Simular crédito
+      </a>
+    </nav>
+
+    <button type="button" class="btn btn-sm btn-outline-light mt-auto" (click)="cerrarSesion()">
+      Cerrar sesión
+    </button>
+  </aside>
+
+  <main class="portal-main">
+    <router-outlet />
+  </main>
+</div>

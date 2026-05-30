@@ -1,0 +1,84 @@
+<div class="admin-page container-fluid py-4">
+  <header class="admin-page__header mb-4">
+    <h1 class="h3 mb-1">Gestión de socios</h1>
+    <p class="text-muted mb-0">Registro y consulta de socios de la cooperativa</p>
+  </header>
+
+  @if (mensaje()) {
+    <div class="alert" [class.alert-success]="!esError()" [class.alert-danger]="esError()">
+      {{ mensaje() }}
+    </div>
+  }
+
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="card admin-card shadow-sm">
+        <div class="card-header admin-card__header">Registrar nuevo socio</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nombres</label>
+              <input class="form-control" [value]="nuevoSocio().nombres" (input)="actualizarCampo('nombres', $any($event.target).value)" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Apellidos</label>
+              <input class="form-control" [value]="nuevoSocio().apellidos" (input)="actualizarCampo('apellidos', $any($event.target).value)" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">DNI</label>
+              <input class="form-control" maxlength="8" [value]="nuevoSocio().dni" (input)="actualizarCampo('dni', $any($event.target).value.replace(/\D/g, '').slice(0, 8))" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Celular</label>
+              <input class="form-control" maxlength="9" [value]="nuevoSocio().telefono" (input)="actualizarCampo('telefono', $any($event.target).value.replace(/\D/g, '').slice(0, 9))" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Correo</label>
+              <input type="email" class="form-control" [value]="nuevoSocio().email" (input)="actualizarCampo('email', $any($event.target).value)" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Aporte mensual (S/.)</label>
+              <input type="number" class="form-control" [value]="nuevoSocio().aporte_mensual" (input)="actualizarCampo('aporte_mensual', +$any($event.target).value)" />
+            </div>
+          </div>
+          <button type="button" class="btn btn-success w-100 mt-3" [disabled]="cargando()" (click)="registrarSocio()">
+            Registrar socio
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card admin-card shadow-sm">
+        <div class="card-header admin-card__header">Socios activos ({{ socios().length }})</div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>DNI</th>
+                <th>Nombre completo</th>
+                <th>Contacto</th>
+                <th>Aporte</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of socios(); track s.id_socio) {
+                <tr>
+                  <td>{{ s.dni }}</td>
+                  <td>{{ s.nombres }} {{ s.apellidos }}</td>
+                  <td>
+                    <small>{{ s.email }}<br />{{ s.telefono }}</small>
+                  </td>
+                  <td>{{ s.aporte_mensual | currency : 'PEN' : 'symbol' : '1.2-2' }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="text-center text-muted py-4">Sin socios registrados</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

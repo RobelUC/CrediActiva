@@ -1,0 +1,66 @@
+@import "../assets/scss/variables";
+
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/list-group";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/close";
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities";
+@import "bootstrap/scss/utilities/api";
+
+@import "../assets/scss/typography";
+@import "../assets/scss/bootstrap-custom";
+
+:root {
+  --ca-electric: #0047ab;
+  --ca-midnight: #011126;
+}
+
+body {
+  background-color: $crediactiva-gray-100;
+  min-height: 100vh;
+}
+
+// Botones globales reutilizables (.ca-btn)
+.ca-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: 2px solid transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+
+  &--primary {
+    background-color: $crediactiva-forest;
+    border-color: $crediactiva-forest;
+    color: $crediactiva-white;
+
+    &:hover {
+      background-color: $crediactiva-forest-light;
+      border-color: $crediactiva-forest-light;
+      color: $crediactiva-white;
+    }
+  }
+}

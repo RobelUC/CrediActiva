@@ -1,0 +1,30 @@
+<div class="ca-auth">
+  <header class="ca-auth__header">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="ca-auth__brand" routerLink="/">
+        <img
+          class="ca-auth__logo"
+          src="assets/images/crediactiva-logo.png"
+          alt="CrediActiva"
+          width="40"
+          height="40"
+        />
+        <span>CREDI ACTIVA</span>
+      </a>
+      <a class="ca-auth__back" routerLink="/">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        Volver al inicio
+      </a>
+    </div>
+  </header>
+
+  <main class="ca-auth__main">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8 col-xl-5">
+          <router-outlet />
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

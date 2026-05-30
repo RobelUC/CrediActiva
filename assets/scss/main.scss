@@ -1,0 +1,25 @@
+// =============================================================================
+// CrediActiva — Hoja de estilos principal
+// Cooperativa de Crédito | Huancayo, Perú
+// =============================================================================
+//
+// Compilación (con Bootstrap instalado vía npm):
+//   npx sass assets/scss/main.scss assets/css/crediactiva.css --load-path=node_modules
+//
+// O incluir solo variables + custom (sin importar todo Bootstrap):
+//   Ver assets/css/crediactiva-standalone.css
+// =============================================================================
+
+@import "variables";
+@import "typography";
+
+// Descomentar si Bootstrap está en node_modules:
+// @import "bootstrap/scss/functions";
+// @import "bootstrap/scss/variables";
+// @import "bootstrap/scss/maps";
+// @import "bootstrap/scss/mixins";
+// @import "bootstrap/scss/root";
+// @import "bootstrap/scss/buttons";
+// @import "bootstrap/scss/utilities";
+
+@import "bootstrap-custom";

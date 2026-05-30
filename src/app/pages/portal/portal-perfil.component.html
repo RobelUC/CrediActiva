@@ -1,0 +1,106 @@
+<div class="portal-page container-fluid py-4">
+  <header class="portal-page__header mb-4">
+    <h1 class="h3 mb-1">Perfil de usuario</h1>
+    <p class="text-muted mb-0">Actualice sus datos de contacto y aporte cooperativo</p>
+  </header>
+
+  @if (perfil(); as p) {
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="card portal-card shadow-sm">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-person-circle display-3 text-primary"></i>
+            <h2 class="h5 mt-3 mb-1">{{ p.nombres }} {{ p.apellidos }}</h2>
+            <p class="text-muted mb-2">DNI {{ p.dni }}</p>
+            @if (p.fecha_registro) {
+              <small class="text-muted">
+                Socio desde {{ p.fecha_registro | date : 'longDate' }}
+              </small>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="card portal-card shadow-sm">
+          <div class="card-header portal-card__header">Editar información</div>
+          <div class="card-body">
+            <form (submit)="$event.preventDefault(); guardar()" novalidate>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Nombres</label>
+                  <input
+                    class="form-control"
+                    [value]="editando().nombres"
+                    (input)="actualizarCampo('nombres', $any($event.target).value)"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Apellidos</label>
+                  <input
+                    class="form-control"
+                    [value]="editando().apellidos"
+                    (input)="actualizarCampo('apellidos', $any($event.target).value)"
+                  />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Correo electrónico</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    [value]="editando().email"
+                    (input)="actualizarCampo('email', $any($event.target).value)"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Celular</label>
+                  <input
+                    class="form-control"
+                    maxlength="9"
+                    [class.is-invalid]="telefonoInvalido()"
+                    [value]="editando().telefono"
+                    (input)="actualizarCampo('telefono', $any($event.target).value.replace(/\D/g, '').slice(0, 9))"
+                  />
+                  @if (telefonoInvalido()) {
+                    <div class="invalid-feedback">9 dígitos requeridos</div>
+                  }
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Aporte mensual (S/.)</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    [value]="editando().aporte_mensual"
+                    (input)="actualizarCampo('aporte_mensual', +$any($event.target).value)"
+                  />
+                </div>
+              </div>
+
+              @if (mensaje()) {
+                <div
+                  class="alert mt-3 mb-0"
+                  [class.alert-success]="!esError()"
+                  [class.alert-danger]="esError()"
+                >
+                  {{ mensaje() }}
+                </div>
+              }
+
+              <button
+                type="submit"
+                class="btn btn-success mt-3"
+                [disabled]="!formularioValido() || guardando()"
+              >
+                @if (guardando()) {
+                  Guardando…
+                } @else {
+                  Guardar cambios
+                }
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

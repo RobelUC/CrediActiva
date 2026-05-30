@@ -1,0 +1,149 @@
+// =============================================================================
+// CrediActiva — Personalización Bootstrap + clases de marca
+// Importar DESPUÉS de definir variables en _variables.scss
+// =============================================================================
+
+// --- Variables CSS globales (útiles fuera de Bootstrap) ---
+:root {
+  --ca-navy: #{$crediactiva-navy};
+  --ca-navy-dark: #{$crediactiva-navy-dark};
+  --ca-navy-light: #{$crediactiva-navy-light};
+  --ca-forest: #{$crediactiva-forest};
+  --ca-forest-dark: #{$crediactiva-forest-dark};
+  --ca-forest-light: #{$crediactiva-forest-light};
+  --ca-font-sans: #{$font-family-sans-serif};
+  --ca-primary: #{$primary};
+  --ca-success: #{$success};
+}
+
+// -----------------------------------------------------------------------------
+// Sobrescritura .btn-primary → Azul marino (seguridad bancaria)
+// -----------------------------------------------------------------------------
+.btn-primary {
+  --bs-btn-color: #{$btn-primary-color};
+  --bs-btn-bg: #{$btn-primary-bg};
+  --bs-btn-border-color: #{$btn-primary-border-color};
+  --bs-btn-hover-color: #{$btn-primary-hover-color};
+  --bs-btn-hover-bg: #{$btn-primary-hover-bg};
+  --bs-btn-hover-border-color: #{$btn-primary-hover-border-color};
+  --bs-btn-focus-shadow-rgb: #{red($crediactiva-navy)}, #{green($crediactiva-navy)},
+    #{blue($crediactiva-navy)};
+  --bs-btn-active-color: #{$btn-primary-hover-color};
+  --bs-btn-active-bg: #{$btn-primary-active-bg};
+  --bs-btn-active-border-color: #{$btn-primary-active-border-color};
+  --bs-btn-disabled-color: #{$btn-primary-color};
+  --bs-btn-disabled-bg: #{$btn-primary-bg};
+  --bs-btn-disabled-border-color: #{$btn-primary-border-color};
+
+  font-weight: $btn-font-weight;
+  letter-spacing: 0.02em;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus-visible {
+    box-shadow: 0 0 0 0.2rem rgba($crediactiva-navy, 0.35);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Sobrescritura .btn-success → Verde bosque (crecimiento y éxito)
+// -----------------------------------------------------------------------------
+.btn-success {
+  --bs-btn-color: #{$btn-success-color};
+  --bs-btn-bg: #{$btn-success-bg};
+  --bs-btn-border-color: #{$btn-success-border-color};
+  --bs-btn-hover-color: #{$btn-success-hover-color};
+  --bs-btn-hover-bg: #{$btn-success-hover-bg};
+  --bs-btn-hover-border-color: #{$btn-success-hover-border-color};
+  --bs-btn-focus-shadow-rgb: #{red($crediactiva-forest)}, #{green($crediactiva-forest)},
+    #{blue($crediactiva-forest)};
+  --bs-btn-active-color: #{$btn-success-hover-color};
+  --bs-btn-active-bg: #{$btn-success-active-bg};
+  --bs-btn-active-border-color: #{$btn-success-active-border-color};
+  --bs-btn-disabled-color: #{$btn-success-color};
+  --bs-btn-disabled-bg: #{$btn-success-bg};
+  --bs-btn-disabled-border-color: #{$btn-success-border-color};
+
+  font-weight: $btn-font-weight;
+  letter-spacing: 0.02em;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus-visible {
+    box-shadow: 0 0 0 0.2rem rgba($crediactiva-forest, 0.35);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Clases semánticas CrediActiva (alias de marca sobre .btn-primary / .btn-success)
+// Uso: <button class="btn btn-crediactiva-primary">Solicitar crédito</button>
+// -----------------------------------------------------------------------------
+.btn.btn-crediactiva-primary,
+.btn-crediactiva-primary.btn-primary,
+.btn-crediactiva-primary {
+  @extend .btn-primary;
+}
+
+.btn.btn-crediactiva-success,
+.btn-crediactiva-success.btn-success,
+.btn-crediactiva-success {
+  @extend .btn-success;
+}
+
+// Variantes outline alineadas a la marca
+.btn-outline-crediactiva-primary {
+  @extend .btn;
+  color: $crediactiva-navy;
+  border-color: $crediactiva-navy;
+  background-color: transparent;
+
+  &:hover,
+  &:focus {
+    color: $crediactiva-white;
+    background-color: $crediactiva-navy;
+    border-color: $crediactiva-navy;
+  }
+
+  &:active,
+  &.active {
+    color: $crediactiva-white;
+    background-color: $crediactiva-navy-dark;
+    border-color: $crediactiva-navy-dark;
+  }
+}
+
+.btn-outline-crediactiva-success {
+  @extend .btn;
+  color: $crediactiva-forest;
+  border-color: $crediactiva-forest;
+  background-color: transparent;
+
+  &:hover,
+  &:focus {
+    color: $crediactiva-white;
+    background-color: $crediactiva-forest;
+    border-color: $crediactiva-forest;
+  }
+
+  &:active,
+  &.active {
+    color: $crediactiva-white;
+    background-color: $crediactiva-forest-dark;
+    border-color: $crediactiva-forest-dark;
+  }
+}
+
+// Utilidades de texto y fondo
+.text-crediactiva-navy {
+  color: $crediactiva-navy !important;
+}
+
+.text-crediactiva-forest {
+  color: $crediactiva-forest !important;
+}
+
+.bg-crediactiva-navy {
+  background-color: $crediactiva-navy !important;
+}
+
+.bg-crediactiva-forest {
+  background-color: $crediactiva-forest !important;
+}

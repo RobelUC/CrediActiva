@@ -1,0 +1,132 @@
+<div class="ca-auth-card">
+  <div class="ca-auth-card__tabs">
+    <span class="ca-auth-card__tab ca-auth-card__tab--active">Iniciar sesión</span>
+    <a
+      class="ca-auth-card__tab"
+      routerLink="/registro"
+      [queryParams]="route.snapshot.queryParams"
+    >
+      Registrarse
+    </a>
+  </div>
+
+  <h1 class="ca-auth-card__title">Bienvenido de nuevo</h1>
+  <p class="ca-auth-card__subtitle">
+    @if (requiereSimulador()) {
+      Inicie sesión o regístrese para acceder al simulador de crédito.
+    } @else {
+      Acceda a su cuenta de socio CrediActiva con su DNI y contraseña.
+    }
+  </p>
+
+  <form (submit)="$event.preventDefault(); iniciarSesion()" novalidate>
+    <div class="mb-3">
+      <label class="form-label" for="login-dni">DNI</label>
+      <input
+        id="login-dni"
+        type="text"
+        class="form-control ca-auth-input"
+        [class.is-invalid]="dniInvalido()"
+        [value]="dni()"
+        maxlength="8"
+        inputmode="numeric"
+        placeholder="12345678"
+        autocomplete="username"
+        (input)="actualizarDni($any($event.target).value)"
+      />
+      @if (dniInvalido()) {
+        <div class="invalid-feedback d-block">Ingrese un DNI válido de 8 dígitos.</div>
+      }
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label" for="login-password">Contraseña</label>
+      <div class="input-group">
+        <input
+          id="login-password"
+          [type]="mostrarPassword() ? 'text' : 'password'"
+          class="form-control ca-auth-input"
+          [class.is-invalid]="passwordInvalida()"
+          [value]="password()"
+          minlength="6"
+          placeholder="Mínimo 6 caracteres"
+          autocomplete="current-password"
+          (input)="actualizarPassword($any($event.target).value)"
+        />
+        <button
+          type="button"
+          class="btn ca-auth-input-toggle"
+          (click)="alternarVisibilidadPassword()"
+          [attr.aria-label]="mostrarPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+        >
+          <i class="bi" [class.bi-eye]="!mostrarPassword()" [class.bi-eye-slash]="mostrarPassword()"></i>
+        </button>
+      </div>
+      @if (passwordInvalida()) {
+        <div class="invalid-feedback d-block">La contraseña debe tener al menos 6 caracteres.</div>
+      }
+    </div>
+
+    @if (mensaje()) {
+      <div
+        class="alert mb-3"
+        [class.alert-success]="!esError()"
+        [class.alert-danger]="esError()"
+        role="status"
+      >
+        {{ mensaje() }}
+      </div>
+    }
+
+    <button
+      type="submit"
+      class="ca-btn ca-btn--primary w-100 mb-3"
+      [disabled]="!formularioValido() || enviando()"
+    >
+      @if (enviando()) {
+        Ingresando…
+      } @else {
+        Iniciar sesión
+      }
+    </button>
+  </form>
+
+  <p class="ca-auth-card__footer text-center mb-0">
+    ¿No tiene cuenta?
+    <a routerLink="/registro" class="ca-auth-card__link">Regístrese aquí</a>
+  </p>
+
+  @if (modoSoloFrontend) {
+    <div class="alert alert-info py-2 px-3 mb-3" role="status">
+      <small>
+        Modo <strong>solo frontend</strong>: no se requiere backend. Use los accesos rápidos o las credenciales demo.
+      </small>
+    </div>
+
+    <div class="d-grid gap-2 mb-3">
+      <button
+        type="button"
+        class="btn btn-outline-primary btn-sm"
+        [disabled]="enviando()"
+        (click)="entrarComoDemo('socio')"
+      >
+        Entrar como socio (demo)
+      </button>
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-sm"
+        [disabled]="enviando()"
+        (click)="entrarComoDemo('admin')"
+      >
+        Entrar como administrador (demo)
+      </button>
+    </div>
+  }
+
+  <p class="ca-auth-card__hint text-center mt-3 mb-0">
+    <small class="text-muted">
+      <strong>Demo socio:</strong> DNI <code>74874853</code> · contraseña <code>demo1234</code><br />
+      <strong>Demo admin:</strong> DNI <code>00000000</code> · contraseña <code>admin123</code>
+    </small>
+  </p>
+</div>

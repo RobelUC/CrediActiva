@@ -1,0 +1,81 @@
+<div class="admin-page container-fluid py-4">
+  <header class="admin-page__header mb-4 d-flex justify-content-between">
+    <div>
+      <h1 class="h3 mb-1">Reportes y auditoría</h1>
+      <p class="text-muted mb-0">Cartera, cálculos financieros y trazabilidad de operaciones</p>
+    </div>
+    <button type="button" class="btn btn-outline-primary btn-sm" (click)="cargar()">
+      Generar reporte
+    </button>
+  </header>
+
+  @if (reporte(); as r) {
+    <p class="small text-muted mb-3">Generado {{ r.actualizado_en | date : 'medium' }}</p>
+
+    <div class="row g-3 mb-4">
+      @for (item of r.cartera_por_producto; track item.tipo_credito) {
+        <div class="col-md-4">
+          <div class="admin-kpi">
+            <span class="admin-kpi__label">{{ item.tipo_credito }}</span>
+            <strong>{{ item.cantidad }} ops.</strong>
+            <small>{{ item.monto_total | currency : 'PEN' : 'symbol' : '1.0-0' }}</small>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="card admin-card shadow-sm mb-4">
+      <div class="card-header admin-card__header">Resumen financiero (auditoría)</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          @for (entry of r.resumen_financiero | keyvalue; track entry.key) {
+            <dt class="col-sm-6">{{ labelResumen(entry.key) }}</dt>
+            <dd class="col-sm-6">
+              @if (entry.key.includes('monto') || entry.key.includes('interes')) {
+                {{ entry.value | currency : 'PEN' : 'symbol' : '1.2-2' }}
+              } @else if (entry.key.includes('indice')) {
+                {{ entry.value | number : '1.1-1' }}%
+              } @else {
+                {{ entry.value }}
+              }
+            </dd>
+          }
+        </dl>
+      </div>
+    </div>
+
+    <div class="card admin-card shadow-sm">
+      <div class="card-header admin-card__header">Auditoría de solicitudes y cálculos TEA</div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>DNI</th>
+              <th>Producto</th>
+              <th>Monto</th>
+              <th>Estado</th>
+              <th>TEA %</th>
+              <th>Cuota</th>
+              <th>Interés total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of r.solicitudes; track s.id_solicitud) {
+              <tr>
+                <td class="text-break"><small>{{ s.id_solicitud.slice(0, 8) }}…</small></td>
+                <td>{{ s.dni_usuario }}</td>
+                <td>{{ s.tipo_credito }}</td>
+                <td>{{ s.monto | currency : 'PEN' : 'symbol' : '1.0-0' }}</td>
+                <td><span class="badge bg-{{ badgeEval(s.estado_evaluacion) }}">{{ s.estado_evaluacion }}</span></td>
+                <td>{{ s.tea_aplicada ?? '—' }}</td>
+                <td>{{ s.cuota_mensual ? (s.cuota_mensual | number : '1.2-2') : '—' }}</td>
+                <td>{{ s.interes_total ? (s.interes_total | number : '1.2-2') : '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

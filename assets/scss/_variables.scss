@@ -1,0 +1,80 @@
+// =============================================================================
+// CrediActiva — Cooperativa de Crédito (Huancayo, Perú)
+// Tokens de diseño: seguridad bancaria + crecimiento
+// =============================================================================
+
+// --- Paleta institucional ---
+$crediactiva-navy:        #002855 !default; // Azul marino — seguridad, confianza
+$crediactiva-forest:      #00703C !default; // Verde bosque — crecimiento, éxito
+
+// Variaciones para estados hover / active / focus
+$crediactiva-navy-dark:   #001a3d !default;
+$crediactiva-navy-light:  #003d7a !default;
+$crediactiva-forest-dark: #005a2f !default;
+$crediactiva-forest-light:#008f4d !default;
+
+// Neutros corporativos
+$crediactiva-white:       #ffffff !default;
+$crediactiva-gray-100:    #f5f7fa !default;
+$crediactiva-gray-200:    #e8ecf1 !default;
+$crediactiva-gray-500:    #6b7280 !default;
+$crediactiva-gray-800:    #1f2937 !default;
+$crediactiva-black:       #0a0f14 !default;
+
+// Semánticos (alias para Bootstrap y utilidades)
+$primary:   $crediactiva-navy !default;
+$secondary: $crediactiva-forest !default;
+$success:   $crediactiva-forest !default;
+
+// Mapa de tema Bootstrap 5 (debe definirse antes de importar variables de BS)
+$theme-colors: (
+  "primary":    $primary,
+  "secondary":  $secondary,
+  "success":    $success,
+  "info":       $crediactiva-navy-light,
+  "light":      $crediactiva-gray-100,
+  "dark":       $crediactiva-navy-dark,
+) !default;
+
+$body-bg:                   $crediactiva-white !default;
+$body-color:                $crediactiva-gray-800 !default;
+$link-color:                $crediactiva-navy !default;
+$link-hover-color:          $crediactiva-navy-light !default;
+
+// --- Tipografía ---
+$font-family-sans-serif: "Poppins", "Roboto", system-ui, -apple-system, "Segoe UI",
+  sans-serif !default;
+$font-family-base:       $font-family-sans-serif !default;
+$headings-font-family:   $font-family-sans-serif !default;
+$headings-font-weight:   600 !default;
+
+// --- Radios y sombras (look corporativo) ---
+$border-radius:    0.375rem !default;
+$border-radius-sm: 0.25rem !default;
+$border-radius-lg: 0.5rem !default;
+$box-shadow-sm:    0 1px 3px rgba($crediactiva-navy, 0.08) !default;
+$box-shadow:       0 4px 12px rgba($crediactiva-navy, 0.12) !default;
+
+// --- Botones Bootstrap (mapeo a marca) ---
+$btn-font-weight:         500 !default;
+$btn-border-radius:       $border-radius !default;
+$btn-padding-y:           0.5rem !default;
+$btn-padding-x:           1.25rem !default;
+
+$btn-primary-color:              $crediactiva-white !default;
+$btn-primary-bg:                 $crediactiva-navy !default;
+$btn-primary-border-color:       $crediactiva-navy !default;
+$btn-primary-hover-color:        $crediactiva-white !default;
+$btn-primary-hover-bg:           $crediactiva-navy-light !default;
+$btn-primary-hover-border-color: $crediactiva-navy-light !default;
+$btn-primary-active-bg:          $crediactiva-navy-dark !default;
+$btn-primary-active-border-color:$crediactiva-navy-dark !default;
+
+$btn-success-color:              $crediactiva-white !default;
+$btn-success-bg:                 $crediactiva-forest !default;
+$btn-success-border-color:       $crediactiva-forest !default;
+$btn-success-hover-color:        $crediactiva-white !default;
+$btn-success-hover-bg:           $crediactiva-forest-light !default;
+$btn-success-hover-border-color: $crediactiva-forest-light !default;
+$btn-success-active-bg:          $crediactiva-forest-dark !default;
+$btn-success-active-border-color:$crediactiva-forest-dark !default;

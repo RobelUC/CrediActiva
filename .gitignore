@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.angular/
+*.log
+.DS_Store
+backend/.venv/
+backend/*.db
+backend/services/**/data/

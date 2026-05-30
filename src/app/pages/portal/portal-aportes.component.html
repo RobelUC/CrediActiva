@@ -1,0 +1,87 @@
+<div class="portal-page container-fluid py-4">
+  <header class="portal-page__header mb-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>
+      <h1 class="h3 mb-1">Historial de aportes</h1>
+      <p class="text-muted mb-0">Cuotas y pagos de sus créditos CrediActiva</p>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-primary" (click)="cargar()">
+      <i class="bi bi-arrow-clockwise"></i> Actualizar
+    </button>
+  </header>
+
+  <div class="btn-group mb-4" role="group">
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-primary]="filtro() === 'TODOS'"
+      [class.btn-outline-primary]="filtro() !== 'TODOS'"
+      (click)="filtro.set('TODOS')"
+    >
+      Todos
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-success]="filtro() === 'PAGADO'"
+      [class.btn-outline-success]="filtro() !== 'PAGADO'"
+      (click)="filtro.set('PAGADO')"
+    >
+      Pagados
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-primary]="filtro() === 'PENDIENTE'"
+      [class.btn-outline-primary]="filtro() !== 'PENDIENTE'"
+      (click)="filtro.set('PENDIENTE')"
+    >
+      Pendientes
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-danger]="filtro() === 'VENCIDO'"
+      [class.btn-outline-danger]="filtro() !== 'VENCIDO'"
+      (click)="filtro.set('VENCIDO')"
+    >
+      Vencidos
+    </button>
+  </div>
+
+  <div class="card portal-card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Cuota</th>
+            <th>Crédito</th>
+            <th>Monto</th>
+            <th>Vencimiento</th>
+            <th>Pago</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of aportesFiltrados(); track a.id_aportacion) {
+            <tr>
+              <td>N.° {{ a.numero_cuota }}</td>
+              <td>{{ a.tipo_credito || '—' }}</td>
+              <td>{{ a.monto_cuota | currency : 'PEN' : 'symbol' : '1.2-2' }}</td>
+              <td>{{ a.fecha_vencimiento }}</td>
+              <td>{{ a.fecha_pago ?? '—' }}</td>
+              <td>
+                <span class="badge bg-{{ badge(a.estado) }}">{{ a.estado }}</span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center text-muted py-5">
+                No hay aportes registrados para este filtro
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

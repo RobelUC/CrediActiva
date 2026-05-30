@@ -1,0 +1,86 @@
+<div class="admin-page container-fluid py-4">
+  <header class="admin-page__header mb-4">
+    <h1 class="h3 mb-1">Dashboard general</h1>
+    <p class="text-muted mb-0">Vista ejecutiva de la cooperativa CrediActiva · Huancayo</p>
+  </header>
+
+  @if (dashboard(); as d) {
+    <p class="small text-muted mb-3">
+      Actualizado {{ d.actualizado_en | date : 'medium' }}
+    </p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-3">
+        <div class="admin-kpi">
+          <span class="admin-kpi__label">Socios</span>
+          <strong>{{ d.total_socios }}</strong>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="admin-kpi admin-kpi--warn">
+          <span class="admin-kpi__label">Solicitudes pendientes</span>
+          <strong>{{ d.solicitudes_pendientes }}</strong>
+          <small>de {{ d.total_solicitudes }} totales</small>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="admin-kpi admin-kpi--ok">
+          <span class="admin-kpi__label">Monto colocado</span>
+          <strong>{{ d.monto_colocado | currency : 'PEN' : 'symbol' : '1.0-0' }}</strong>
+          <small>{{ d.solicitudes_aprobadas }} aprobadas</small>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="admin-kpi admin-kpi--danger">
+          <span class="admin-kpi__label">Por cobrar</span>
+          <strong>{{ d.monto_por_cobrar | currency : 'PEN' : 'symbol' : '1.0-0' }}</strong>
+          <small>{{ d.aportaciones.vencidas }} vencidas</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card admin-card shadow-sm">
+          <div class="card-header admin-card__header">Cartera de préstamos</div>
+          <div class="card-body">
+            <dl class="row mb-0">
+              <dt class="col-6">Aprobadas</dt>
+              <dd class="col-6">{{ d.solicitudes_aprobadas }}</dd>
+              <dt class="col-6">Rechazadas</dt>
+              <dd class="col-6">{{ d.solicitudes_rechazadas }}</dd>
+              <dt class="col-6">Tasa de aprobación</dt>
+              <dd class="col-6">{{ d.tasa_aprobacion }}%</dd>
+            </dl>
+            <a routerLink="/admin/prestamos" class="btn btn-sm btn-outline-primary mt-3">
+              Ir a módulo de préstamos
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card admin-card shadow-sm">
+          <div class="card-header admin-card__header">Control de aportaciones</div>
+          <div class="card-body">
+            <dl class="row mb-0">
+              <dt class="col-6">Cuotas pagadas</dt>
+              <dd class="col-6">{{ d.aportaciones.pagadas }}</dd>
+              <dt class="col-6">Pendientes</dt>
+              <dd class="col-6">{{ d.aportaciones.pendientes }}</dd>
+              <dt class="col-6">Recaudado</dt>
+              <dd class="col-6">{{ d.aportaciones.monto_pagado | currency : 'PEN' : 'symbol' : '1.0-0' }}</dd>
+            </dl>
+            <a routerLink="/admin/aportaciones" class="btn btn-sm btn-outline-primary mt-3">
+              Control de aportaciones
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mt-4">
+      <a routerLink="/admin/socios" class="btn btn-success">Gestión de socios</a>
+      <a routerLink="/admin/reportes" class="btn btn-outline-secondary">Reportes y auditoría</a>
+    </div>
+  }
+</div>

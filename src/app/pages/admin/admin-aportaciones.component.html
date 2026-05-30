@@ -1,0 +1,81 @@
+<div class="admin-page container-fluid py-4">
+  <header class="admin-page__header mb-4 d-flex justify-content-between align-items-center">
+    <div>
+      <h1 class="h3 mb-1">Control de aportaciones</h1>
+      <p class="text-muted mb-0">Monitoreo en tiempo real del cumplimiento de pagos</p>
+    </div>
+    <button type="button" class="btn btn-outline-primary btn-sm" (click)="refrescar()">
+      <i class="bi bi-arrow-clockwise"></i> Actualizar
+    </button>
+  </header>
+
+  @if (mensaje()) {
+    <div class="alert" [class.alert-success]="!esError()" [class.alert-danger]="esError()">
+      {{ mensaje() }}
+    </div>
+  }
+
+  @if (resumen(); as r) {
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3">
+        <div class="admin-kpi"><span class="admin-kpi__label">Total</span><strong>{{ r.total }}</strong></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="admin-kpi admin-kpi--ok">
+          <span class="admin-kpi__label">Pagadas</span><strong>{{ r.pagadas }}</strong>
+          <small>{{ r.monto_pagado | currency : 'PEN' : 'symbol' : '1.0-0' }}</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="admin-kpi admin-kpi--warn">
+          <span class="admin-kpi__label">Pendientes</span><strong>{{ r.pendientes }}</strong>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="admin-kpi admin-kpi--danger">
+          <span class="admin-kpi__label">Vencidas</span><strong>{{ r.vencidas }}</strong>
+        </div>
+      </div>
+    </div>
+    <p class="small text-muted mb-3">
+      <i class="bi bi-broadcast"></i> Tiempo real · {{ r.actualizado_en | date : 'mediumTime' }}
+    </p>
+  }
+
+  <div class="card admin-card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Socio</th>
+            <th>Cuota</th>
+            <th>Monto</th>
+            <th>Vencimiento</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of aportaciones(); track a.id_aportacion) {
+            <tr>
+              <td><strong>{{ a.nombre_socio }}</strong><br /><small>{{ a.dni_socio }}</small></td>
+              <td>{{ a.numero_cuota }}</td>
+              <td>{{ a.monto_cuota | currency : 'PEN' : 'symbol' : '1.2-2' }}</td>
+              <td>{{ a.fecha_vencimiento }}</td>
+              <td><span class="badge bg-{{ badgeAport(a.estado) }}">{{ a.estado }}</span></td>
+              <td>
+                @if (a.estado !== 'PAGADO') {
+                  <button type="button" class="btn btn-sm btn-success" (click)="registrarPago(a)">Registrar pago</button>
+                } @else {
+                  <small>{{ a.fecha_pago }}</small>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="text-center py-4 text-muted">Sin aportaciones — apruebe préstamos primero</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

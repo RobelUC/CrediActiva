@@ -1,0 +1,130 @@
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { Observable, delay, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import type {
+  Aportacion,
+  DashboardAdmin,
+  EvaluarSolicitudRequest,
+  ReporteAuditoria,
+  ResumenAportaciones,
+  Socio,
+  SocioCreate,
+  SolicitudAdmin,
+} from '../models/admin.models';
+import {
+  MOCK_APORTACIONES,
+  MOCK_DASHBOARD,
+  MOCK_REPORTE,
+  MOCK_SOCIOS,
+  MOCK_SOLICITUDES,
+} from '../mock/frontend-demo.mock';
+
+const API = `${environment.apiUrl}/admin`;
+
+@Injectable({ providedIn: 'root' })
+export class AdminService {
+  private readonly http = inject(HttpClient);
+
+  obtenerDashboard(): Observable<DashboardAdmin> {
+    if (environment.modoSoloFrontend) {
+      return of({ ...MOCK_DASHBOARD }).pipe(delay(300));
+    }
+    return this.http.get<DashboardAdmin>(`${API}/dashboard`);
+  }
+
+  obtenerReporteAuditoria(): Observable<ReporteAuditoria> {
+    if (environment.modoSoloFrontend) {
+      return of({ ...MOCK_REPORTE }).pipe(delay(300));
+    }
+    return this.http.get<ReporteAuditoria>(`${API}/reportes/auditoria`);
+  }
+
+  listarSocios(): Observable<Socio[]> {
+    if (environment.modoSoloFrontend) {
+      return of([...MOCK_SOCIOS]).pipe(delay(300));
+    }
+    return this.http.get<Socio[]>(`${API}/socios`);
+  }
+
+  registrarSocio(datos: SocioCreate): Observable<Socio> {
+    if (environment.modoSoloFrontend) {
+      const nuevo: Socio = {
+        id_socio: 'demo-' + datos.dni,
+        ...datos,
+        fecha_registro: new Date().toISOString(),
+        activo: true,
+      };
+      return of(nuevo).pipe(delay(400));
+    }
+    return this.http.post<Socio>(`${API}/socios`, datos);
+  }
+
+  listarSolicitudes(): Observable<SolicitudAdmin[]> {
+    if (environment.modoSoloFrontend) {
+      return of([...MOCK_SOLICITUDES]).pipe(delay(300));
+    }
+    return this.http.get<SolicitudAdmin[]>(`${API}/solicitudes`);
+  }
+
+  obtenerSolicitud(id: string): Observable<SolicitudAdmin> {
+    if (environment.modoSoloFrontend) {
+      const sol =
+        MOCK_SOLICITUDES.find((s) => s.id_solicitud === id) ?? MOCK_SOLICITUDES[0];
+      return of({ ...sol }).pipe(delay(200));
+    }
+    return this.http.get<SolicitudAdmin>(`${API}/solicitudes/${id}`);
+  }
+
+  evaluarSolicitud(
+    id: string,
+    body: EvaluarSolicitudRequest,
+  ): Observable<SolicitudAdmin> {
+    if (environment.modoSoloFrontend) {
+      const base =
+        MOCK_SOLICITUDES.find((s) => s.id_solicitud === id) ?? MOCK_SOLICITUDES[0];
+      const actualizada: SolicitudAdmin = {
+        ...base,
+        estado_evaluacion: body.decision,
+        observaciones: body.observaciones || 'Evaluación demo (sin backend).',
+      };
+      return of(actualizada).pipe(delay(400));
+    }
+    return this.http.post<SolicitudAdmin>(
+      `${API}/solicitudes/${id}/evaluar`,
+      body,
+    );
+  }
+
+  listarAportaciones(): Observable<Aportacion[]> {
+    if (environment.modoSoloFrontend) {
+      return of([...MOCK_APORTACIONES]).pipe(delay(300));
+    }
+    return this.http.get<Aportacion[]>(`${API}/aportaciones`);
+  }
+
+  resumenAportaciones(): Observable<ResumenAportaciones> {
+    if (environment.modoSoloFrontend) {
+      return of({ ...MOCK_DASHBOARD.aportaciones }).pipe(delay(200));
+    }
+    return this.http.get<ResumenAportaciones>(`${API}/aportaciones/resumen`);
+  }
+
+  registrarPago(idAportacion: string): Observable<Aportacion> {
+    if (environment.modoSoloFrontend) {
+      const base =
+        MOCK_APORTACIONES.find((a) => a.id_aportacion === idAportacion) ??
+        MOCK_APORTACIONES[1];
+      const pagada: Aportacion = {
+        ...base,
+        estado: 'PAGADO',
+        fecha_pago: new Date().toISOString().slice(0, 10),
+      };
+      return of(pagada).pipe(delay(400));
+    }
+    return this.http.post<Aportacion>(
+      `${API}/aportaciones/${idAportacion}/pagar`,
+      {},
+    );
+  }
+}

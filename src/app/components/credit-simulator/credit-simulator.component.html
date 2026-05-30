@@ -1,0 +1,229 @@
+<header class="simulator-page-nav py-3 mb-4 border-bottom">
+  <div class="container d-flex justify-content-between align-items-center">
+    <a class="simulator-page-nav__brand fw-bold text-decoration-none" routerLink="/">
+      <img
+        class="simulator-page-nav__logo"
+        src="assets/images/crediactiva-logo.png"
+        alt="CrediActiva"
+        width="36"
+        height="36"
+      />
+      <span>CREDI ACTIVA</span>
+    </a>
+    <div class="d-flex align-items-center gap-2">
+      @if (auth.sesionActiva()) {
+        <span class="simulator-page-nav__user small text-muted">
+          Hola, <strong>{{ auth.usuario()?.nombres }}</strong>
+        </span>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-danger"
+          (click)="auth.cerrarSesion()"
+        >
+          Salir
+        </button>
+      } @else {
+        <a class="btn btn-sm btn-outline-primary" routerLink="/portal">Mi portal</a>
+        <a class="btn btn-sm btn-success" routerLink="/registro">Registrarse</a>
+      }
+      <a class="btn btn-sm btn-outline-secondary" routerLink="/">← Inicio</a>
+    </div>
+  </div>
+</header>
+
+<section class="simulator container" aria-labelledby="simulator-title">
+  <div class="simulator__intro mb-4">
+    <h2 id="simulator-title" class="simulator__title h4 mb-1">
+      Simula tu crédito
+    </h2>
+    <p class="simulator__subtitle text-muted mb-0">
+      Calcula tu cuota al instante con las tasas CrediActiva
+    </p>
+  </div>
+
+  <div class="row g-4 g-lg-5 align-items-stretch">
+    <!-- Columna izquierda: formulario -->
+    <div class="col-lg-6">
+      <form
+        class="simulator-form card border-0 shadow-sm h-100"
+        (submit)="$event.preventDefault()"
+        novalidate
+      >
+        <div class="card-body p-4 p-lg-5">
+          <div class="mb-4">
+            <label for="monto" class="form-label simulator-form__label">
+              Monto solicitado (S/.)
+            </label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text simulator-form__prefix">S/.</span>
+              <input
+                id="monto"
+                type="number"
+                class="form-control"
+                [class.is-invalid]="mostrarErrorMonto()"
+                [value]="monto()"
+                min="0"
+                step="100"
+                inputmode="decimal"
+                aria-describedby="monto-help monto-error"
+                (input)="actualizarMonto($any($event.target).value)"
+              />
+            </div>
+
+            @if (mostrarErrorMonto()) {
+              <div id="monto-error" class="invalid-feedback d-block" role="alert">
+                El monto mínimo para simular es S/. {{ MONTO_MINIMO | number : '1.0-0' }}.
+              </div>
+            } @else {
+              <div id="monto-help" class="form-text">
+                Ingresa un monto desde S/. {{ MONTO_MINIMO | number : '1.0-0' }}.
+              </div>
+            }
+          </div>
+
+          <div class="mb-4">
+            <label for="tipoCredito" class="form-label simulator-form__label">
+              Tipo de Crédito
+            </label>
+            <select
+              id="tipoCredito"
+              class="form-select form-select-lg"
+              [value]="tipoCredito()"
+              (change)="actualizarTipoCredito($any($event.target).value)"
+            >
+              @for (tipo of tiposCredito; track tipo) {
+                <option [value]="tipo">{{ tipo }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label for="dni" class="form-label simulator-form__label">
+              DNI del solicitante
+            </label>
+            <input
+              id="dni"
+              type="text"
+              class="form-control form-control-lg"
+              [class.is-invalid]="dniUsuario().length > 0 && !esDniValido()"
+              [value]="dniUsuario()"
+              maxlength="8"
+              inputmode="numeric"
+              placeholder="12345678"
+              aria-describedby="dni-help dni-error"
+              (input)="actualizarDni($any($event.target).value)"
+            />
+            @if (dniUsuario().length > 0 && !esDniValido()) {
+              <div id="dni-error" class="invalid-feedback d-block" role="alert">
+                El DNI peruano debe tener exactamente 8 dígitos.
+              </div>
+            } @else {
+              <div id="dni-help" class="form-text">
+                Ingrese su DNI de 8 dígitos sin guiones.
+              </div>
+            }
+          </div>
+
+          <div>
+            <label for="plazo" class="form-label simulator-form__label">
+              Plazo (Meses)
+            </label>
+            <select
+              id="plazo"
+              class="form-select form-select-lg"
+              [ngModel]="plazoMeses()"
+              (ngModelChange)="actualizarPlazo($event)"
+              [attr.aria-valuenow]="plazoMeses()"
+            >
+              @for (mes of plazosDisponibles; track mes) {
+                <option [ngValue]="mes">{{ mes }} meses</option>
+              }
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Columna derecha: resumen interactivo -->
+    <div class="col-lg-6">
+      <aside
+        class="simulator-summary card border-0 h-100"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <div class="card-body p-4 p-lg-5 d-flex flex-column">
+          <p class="simulator-summary__eyebrow text-uppercase mb-2">
+            Resumen de simulación
+          </p>
+
+          <div class="simulator-summary__item mb-4">
+            <span class="simulator-summary__label">Cuota Mensual Estimada</span>
+            @if (esMontoValido()) {
+              <strong class="simulator-summary__value simulator-summary__value--highlight">
+                {{ cuotaFormateada() }}
+              </strong>
+            } @else {
+              <strong class="simulator-summary__value simulator-summary__value--muted">
+                —
+              </strong>
+              <small class="d-block text-muted mt-1">
+                Ingresa un monto válido para ver la cuota.
+              </small>
+            }
+          </div>
+
+          <div class="simulator-summary__item mb-4">
+            <span class="simulator-summary__label">Tasa Efectiva Anual (TEA)</span>
+            <strong class="simulator-summary__value">{{ teaFormateada() }}</strong>
+            <small class="d-block text-muted mt-1">
+              {{ tipoCredito() }} · {{ plazoMeses() }} meses
+            </small>
+          </div>
+
+          <div class="simulator-summary__meta mt-auto pt-3 border-top">
+            <dl class="row g-2 mb-4 small text-muted">
+              <dt class="col-5 mb-0">Monto</dt>
+              <dd class="col-7 mb-0 text-end fw-medium text-dark">
+                {{ montoFormateado() }}
+              </dd>
+              <dt class="col-5 mb-0">Plazo</dt>
+              <dd class="col-7 mb-0 text-end fw-medium text-dark">
+                {{ plazoMeses() }} meses
+              </dd>
+            </dl>
+
+            <button
+              type="button"
+              class="btn btn-primary btn-crediactiva-primary btn-lg w-100"
+              [disabled]="!formularioValido() || enviando()"
+              (click)="solicitarCredito()"
+            >
+              @if (enviando()) {
+                Enviando solicitud…
+              } @else {
+                Solicitar Crédito
+              }
+            </button>
+
+            @if (mensajeExito()) {
+              <div class="alert alert-success mt-3 mb-0 small" role="status">
+                {{ mensajeExito() }}
+              </div>
+            }
+
+            @if (!formularioValido() && (monto() > 0 || dniUsuario().length > 0)) {
+              <p class="small text-danger text-center mt-3 mb-0" role="status">
+                @if (!esMontoValido() && monto() > 0) {
+                  Monto mínimo S/. {{ MONTO_MINIMO | number : '1.0-0' }}.
+                }
+                @if (!esDniValido() && dniUsuario().length > 0) {
+                  DNI inválido (8 dígitos).
+                }
+              </p>
+            }
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
