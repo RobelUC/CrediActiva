@@ -81,7 +81,50 @@ def obtener_por_email(email: str) -> dict[str, Any] | None:
         return _to_dict(socio) if socio else None
 
 
-def listar_socios() -> list[dict[str, Any]]:
+def obtener_por_id(id_socio: str) -> dict[str, Any] | None:
     with SessionLocal() as db:
-        socios = db.query(Socio).order_by(Socio.fecha_registro.desc()).all()
+        socio = db.query(Socio).filter(Socio.id_socio == id_socio).first()
+        return _to_dict(socio) if socio else None
+
+
+def listar_socios(*, solo_activos: bool = False) -> list[dict[str, Any]]:
+    with SessionLocal() as db:
+        query = db.query(Socio)
+        if solo_activos:
+            query = query.filter(Socio.activo.is_(True))
+        socios = query.order_by(Socio.fecha_registro.desc()).all()
         return [_to_dict(s) for s in socios]
+
+
+def actualizar_socio(id_socio: str, datos: dict[str, Any]) -> dict[str, Any] | None:
+    with SessionLocal() as db:
+        socio = db.query(Socio).filter(Socio.id_socio == id_socio).first()
+        if not socio:
+            return None
+
+        email = datos["email"].strip().lower()
+        otro = db.query(Socio).filter(Socio.email == email, Socio.id_socio != id_socio).first()
+        if otro:
+            raise ValueError("El correo ya está registrado en otro socio.")
+
+        socio.nombres = datos["nombres"].strip()
+        socio.apellidos = datos["apellidos"].strip()
+        socio.email = email
+        socio.telefono = datos["telefono"]
+        socio.aporte_mensual = round(datos.get("aporte_mensual", socio.aporte_mensual), 2)
+        socio.activo = datos.get("activo", socio.activo)
+
+        db.commit()
+        db.refresh(socio)
+        return _to_dict(socio)
+
+
+def eliminar_socio(id_socio: str) -> dict[str, Any] | None:
+    with SessionLocal() as db:
+        socio = db.query(Socio).filter(Socio.id_socio == id_socio).first()
+        if not socio:
+            return None
+        socio.activo = False
+        db.commit()
+        db.refresh(socio)
+        return _to_dict(socio)

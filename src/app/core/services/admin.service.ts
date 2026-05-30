@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, delay, of } from 'rxjs';
+import { Observable, delay, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import type {
   Aportacion,
@@ -10,6 +10,7 @@ import type {
   ResumenAportaciones,
   Socio,
   SocioCreate,
+  SocioUpdate,
   SolicitudAdmin,
 } from '../models/admin.models';
 import {
@@ -25,6 +26,7 @@ const API = `${environment.apiUrl}/admin`;
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private readonly http = inject(HttpClient);
+  private sociosDemo = [...MOCK_SOCIOS];
 
   obtenerDashboard(): Observable<DashboardAdmin> {
     if (environment.modoSoloFrontend) {
@@ -42,22 +44,63 @@ export class AdminService {
 
   listarSocios(): Observable<Socio[]> {
     if (environment.modoSoloFrontend) {
-      return of([...MOCK_SOCIOS]).pipe(delay(300));
+      return of([...this.sociosDemo]).pipe(delay(300));
     }
     return this.http.get<Socio[]>(`${API}/socios`);
   }
 
+  obtenerSocio(idSocio: string): Observable<Socio> {
+    if (environment.modoSoloFrontend) {
+      const socio = this.sociosDemo.find((s) => s.id_socio === idSocio);
+      if (!socio) {
+        return throwError(() => ({ error: { detail: 'Socio no encontrado.' } }));
+      }
+      return of({ ...socio }).pipe(delay(200));
+    }
+    return this.http.get<Socio>(`${API}/socios/${idSocio}`);
+  }
+
   registrarSocio(datos: SocioCreate): Observable<Socio> {
     if (environment.modoSoloFrontend) {
+      if (this.sociosDemo.some((s) => s.dni === datos.dni)) {
+        return throwError(() => ({ error: { detail: 'El DNI ya está registrado como socio.' } }));
+      }
       const nuevo: Socio = {
         id_socio: 'demo-' + datos.dni,
         ...datos,
         fecha_registro: new Date().toISOString(),
         activo: true,
       };
+      this.sociosDemo = [nuevo, ...this.sociosDemo];
       return of(nuevo).pipe(delay(400));
     }
     return this.http.post<Socio>(`${API}/socios`, datos);
+  }
+
+  actualizarSocio(idSocio: string, datos: SocioUpdate): Observable<Socio> {
+    if (environment.modoSoloFrontend) {
+      const idx = this.sociosDemo.findIndex((s) => s.id_socio === idSocio);
+      if (idx < 0) {
+        return throwError(() => ({ error: { detail: 'Socio no encontrado.' } }));
+      }
+      const actualizado: Socio = { ...this.sociosDemo[idx], ...datos };
+      this.sociosDemo = this.sociosDemo.map((s, i) => (i === idx ? actualizado : s));
+      return of(actualizado).pipe(delay(400));
+    }
+    return this.http.put<Socio>(`${API}/socios/${idSocio}`, datos);
+  }
+
+  eliminarSocio(idSocio: string): Observable<Socio> {
+    if (environment.modoSoloFrontend) {
+      const idx = this.sociosDemo.findIndex((s) => s.id_socio === idSocio);
+      if (idx < 0) {
+        return throwError(() => ({ error: { detail: 'Socio no encontrado.' } }));
+      }
+      const desactivado: Socio = { ...this.sociosDemo[idx], activo: false };
+      this.sociosDemo = this.sociosDemo.map((s, i) => (i === idx ? desactivado : s));
+      return of(desactivado).pipe(delay(400));
+    }
+    return this.http.delete<Socio>(`${API}/socios/${idSocio}`);
   }
 
   listarSolicitudes(): Observable<SolicitudAdmin[]> {

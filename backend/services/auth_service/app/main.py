@@ -8,8 +8,16 @@ from app.auth_routes import router as auth_router
 from app.consulta_dni import router as consulta_dni_router
 from app.database import init_db
 from app.demo_data import sembrar_cuentas_demo
-from app.repository import guardar_socio, listar_socios, obtener_por_dni
-from app.schemas import PerfilSocioUpdate, SocioCreate, SocioResponse
+from app.repository import (
+    actualizar_socio,
+    eliminar_socio,
+    guardar_socio,
+    listar_socios,
+    obtener_por_dni,
+    obtener_por_email,
+    obtener_por_id,
+)
+from app.schemas import PerfilSocioUpdate, SocioCreate, SocioResponse, SocioUpdate
 
 
 @asynccontextmanager
@@ -51,6 +59,51 @@ def registrar_socio(payload: SocioCreate) -> SocioResponse:
 @app.get("/api/v1/admin/socios", response_model=list[SocioResponse])
 def obtener_socios() -> list[SocioResponse]:
     return [SocioResponse(**s) for s in listar_socios()]
+
+
+@app.get("/api/v1/admin/socios/{id_socio}", response_model=SocioResponse)
+def obtener_socio(id_socio: str) -> SocioResponse:
+    socio = obtener_por_id(id_socio)
+    if not socio:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+    return SocioResponse(**socio)
+
+
+@app.put("/api/v1/admin/socios/{id_socio}", response_model=SocioResponse)
+def editar_socio(id_socio: str, payload: SocioUpdate) -> SocioResponse:
+    if not obtener_por_id(id_socio):
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+
+    existente = obtener_por_email(payload.email.strip().lower())
+    if existente and existente["id_socio"] != id_socio:
+        raise HTTPException(status_code=409, detail="El correo ya está registrado en otro socio.")
+
+    try:
+        actualizado = actualizar_socio(
+            id_socio,
+            {
+                "nombres": payload.nombres,
+                "apellidos": payload.apellidos,
+                "email": payload.email,
+                "telefono": payload.telefono,
+                "aporte_mensual": payload.aporte_mensual,
+                "activo": payload.activo,
+            },
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    if not actualizado:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+    return SocioResponse(**actualizado)
+
+
+@app.delete("/api/v1/admin/socios/{id_socio}", response_model=SocioResponse)
+def desactivar_socio(id_socio: str) -> SocioResponse:
+    socio = eliminar_socio(id_socio)
+    if not socio:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+    return SocioResponse(**socio)
 
 
 @app.get("/internal/socios", response_model=list[SocioResponse])

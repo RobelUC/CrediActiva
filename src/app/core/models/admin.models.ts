@@ -61,6 +61,15 @@ export interface SocioCreate {
   aporte_mensual: number;
 }
 
+export interface SocioUpdate {
+  nombres: string;
+  apellidos: string;
+  email: string;
+  telefono: string;
+  aporte_mensual: number;
+  activo: boolean;
+}
+
 export interface CuotaCronograma {
   numero_cuota: number;
   fecha_vencimiento: string;

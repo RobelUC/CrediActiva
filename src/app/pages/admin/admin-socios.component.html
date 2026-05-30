@@ -1,7 +1,7 @@
 <div class="admin-page container-fluid py-4">
   <header class="admin-page__header mb-4">
     <h1 class="h3 mb-1">Gestión de socios</h1>
-    <p class="text-muted mb-0">Registro y consulta de socios de la cooperativa</p>
+    <p class="text-muted mb-0">Alta, consulta, edición y baja de socios de la cooperativa</p>
   </header>
 
   @if (mensaje()) {
@@ -13,66 +13,192 @@
   <div class="row g-4">
     <div class="col-lg-5">
       <div class="card admin-card shadow-sm">
-        <div class="card-header admin-card__header">Registrar nuevo socio</div>
+        <div class="card-header admin-card__header d-flex justify-content-between align-items-center">
+          <span>{{ tituloFormulario() }}</span>
+          @if (modoEdicion()) {
+            <span class="badge bg-light text-dark">DNI {{ formulario().dni }}</span>
+          }
+        </div>
         <div class="card-body">
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Nombres</label>
-              <input class="form-control" [value]="nuevoSocio().nombres" (input)="actualizarCampo('nombres', $any($event.target).value)" />
+              <input
+                class="form-control"
+                [value]="formulario().nombres"
+                (input)="actualizarCampo('nombres', $any($event.target).value)"
+              />
             </div>
             <div class="col-md-6">
               <label class="form-label">Apellidos</label>
-              <input class="form-control" [value]="nuevoSocio().apellidos" (input)="actualizarCampo('apellidos', $any($event.target).value)" />
+              <input
+                class="form-control"
+                [value]="formulario().apellidos"
+                (input)="actualizarCampo('apellidos', $any($event.target).value)"
+              />
             </div>
             <div class="col-md-6">
               <label class="form-label">DNI</label>
-              <input class="form-control" maxlength="8" [value]="nuevoSocio().dni" (input)="actualizarCampo('dni', $any($event.target).value.replace(/\D/g, '').slice(0, 8))" />
+              <input
+                class="form-control"
+                maxlength="8"
+                [readonly]="modoEdicion()"
+                [value]="formulario().dni"
+                (input)="actualizarCampo('dni', $any($event.target).value.replace(/\D/g, '').slice(0, 8))"
+              />
             </div>
             <div class="col-md-6">
               <label class="form-label">Celular</label>
-              <input class="form-control" maxlength="9" [value]="nuevoSocio().telefono" (input)="actualizarCampo('telefono', $any($event.target).value.replace(/\D/g, '').slice(0, 9))" />
+              <input
+                class="form-control"
+                maxlength="9"
+                [value]="formulario().telefono"
+                (input)="actualizarCampo('telefono', $any($event.target).value.replace(/\D/g, '').slice(0, 9))"
+              />
             </div>
             <div class="col-12">
               <label class="form-label">Correo</label>
-              <input type="email" class="form-control" [value]="nuevoSocio().email" (input)="actualizarCampo('email', $any($event.target).value)" />
+              <input
+                type="email"
+                class="form-control"
+                [value]="formulario().email"
+                (input)="actualizarCampo('email', $any($event.target).value)"
+              />
             </div>
-            <div class="col-12">
+            <div class="col-md-6">
               <label class="form-label">Aporte mensual (S/.)</label>
-              <input type="number" class="form-control" [value]="nuevoSocio().aporte_mensual" (input)="actualizarCampo('aporte_mensual', +$any($event.target).value)" />
+              <input
+                type="number"
+                class="form-control"
+                min="0"
+                step="0.01"
+                [value]="formulario().aporte_mensual"
+                (input)="actualizarCampo('aporte_mensual', +$any($event.target).value)"
+              />
             </div>
+            @if (modoEdicion() && socioEditando(); as editando) {
+              <div class="col-md-6">
+                <label class="form-label">Estado</label>
+                <select
+                  class="form-select"
+                  [value]="editando.activo ? 'activo' : 'inactivo'"
+                  (change)="actualizarActivo($any($event.target).value === 'activo')"
+                >
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                </select>
+              </div>
+            }
           </div>
-          <button type="button" class="btn btn-success w-100 mt-3" [disabled]="cargando()" (click)="registrarSocio()">
-            Registrar socio
-          </button>
+
+          <div class="d-grid gap-2 mt-3">
+            <button
+              type="button"
+              class="btn btn-success"
+              [disabled]="cargando()"
+              (click)="guardarSocio()"
+            >
+              @if (modoEdicion()) {
+                Guardar cambios
+              } @else {
+                Registrar socio
+              }
+            </button>
+            @if (modoEdicion()) {
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                [disabled]="cargando()"
+                (click)="cancelarEdicion()"
+              >
+                Cancelar edición
+              </button>
+            }
+          </div>
         </div>
       </div>
     </div>
+
     <div class="col-lg-7">
       <div class="card admin-card shadow-sm">
-        <div class="card-header admin-card__header">Socios activos ({{ socios().length }})</div>
+        <div class="card-header admin-card__header d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <span>Socios registrados ({{ sociosFiltrados().length }})</span>
+          <select
+            class="form-select form-select-sm w-auto"
+            [value]="filtroEstado()"
+            (change)="filtroEstado.set($any($event.target).value)"
+          >
+            <option value="todos">Todos</option>
+            <option value="activos">Solo activos</option>
+            <option value="inactivos">Solo inactivos</option>
+          </select>
+        </div>
         <div class="table-responsive">
-          <table class="table table-hover mb-0">
+          <table class="table table-hover mb-0 align-middle">
             <thead>
               <tr>
                 <th>DNI</th>
                 <th>Nombre completo</th>
                 <th>Contacto</th>
                 <th>Aporte</th>
+                <th>Estado</th>
+                <th class="text-end">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              @for (s of socios(); track s.id_socio) {
-                <tr>
+              @for (s of sociosFiltrados(); track s.id_socio) {
+                <tr [class.table-secondary]="!s.activo">
                   <td>{{ s.dni }}</td>
                   <td>{{ s.nombres }} {{ s.apellidos }}</td>
                   <td>
                     <small>{{ s.email }}<br />{{ s.telefono }}</small>
                   </td>
                   <td>{{ s.aporte_mensual | currency : 'PEN' : 'symbol' : '1.2-2' }}</td>
+                  <td>
+                    @if (s.activo) {
+                      <span class="badge bg-success">Activo</span>
+                    } @else {
+                      <span class="badge bg-secondary">Inactivo</span>
+                    }
+                  </td>
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        title="Editar"
+                        [disabled]="cargando()"
+                        (click)="iniciarEdicion(s)"
+                      >
+                        Editar
+                      </button>
+                      @if (s.activo) {
+                        <button
+                          type="button"
+                          class="btn btn-outline-danger"
+                          title="Desactivar"
+                          [disabled]="cargando()"
+                          (click)="desactivarSocio(s)"
+                        >
+                          Desactivar
+                        </button>
+                      } @else {
+                        <button
+                          type="button"
+                          class="btn btn-outline-success"
+                          title="Reactivar"
+                          [disabled]="cargando()"
+                          (click)="reactivarSocio(s)"
+                        >
+                          Reactivar
+                        </button>
+                      }
+                    </div>
+                  </td>
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="4" class="text-center text-muted py-4">Sin socios registrados</td>
+                  <td colspan="6" class="text-center text-muted py-4">Sin socios registrados</td>
                 </tr>
               }
             </tbody>

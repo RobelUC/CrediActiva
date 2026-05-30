@@ -25,6 +25,22 @@ class SocioCreate(BaseModel):
         return valor
 
 
+class SocioUpdate(BaseModel):
+    nombres: str = Field(..., min_length=2)
+    apellidos: str = Field(..., min_length=2)
+    email: str = Field(..., min_length=5)
+    telefono: str = Field(..., min_length=9, max_length=9)
+    aporte_mensual: float = Field(default=50.0, ge=0)
+    activo: bool = True
+
+    @field_validator("telefono")
+    @classmethod
+    def validar_telefono(cls, valor: str) -> str:
+        if not telefono_valido(valor):
+            raise ValueError("El teléfono debe tener 9 dígitos (celular Perú).")
+        return valor
+
+
 class SocioResponse(BaseModel):
     id_socio: str
     nombres: str
