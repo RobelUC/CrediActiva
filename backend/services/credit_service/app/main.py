@@ -100,7 +100,6 @@ def evaluar_solicitud(id_solicitud: str, payload: EvaluarSolicitudRequest) -> So
             solicitud["plazo_meses"],
             solicitud["tipo_credito"],
         )
-        _crear_aportaciones(solicitud, cronograma)
 
     actualizada = actualizar_solicitud(
         id_solicitud,
@@ -110,6 +109,10 @@ def evaluar_solicitud(id_solicitud: str, payload: EvaluarSolicitudRequest) -> So
             "cronograma": cronograma,
         },
     )
+
+    if payload.decision == "APROBADO" and actualizada:
+        _crear_aportaciones(actualizada)
+
     return _map_admin(actualizada)  # type: ignore[arg-type]
 
 
@@ -118,33 +121,20 @@ def solicitudes_internas(dni: str | None = None) -> list[dict]:
     return listar_solicitudes(dni)
 
 
-def _nombre_socio(dni: str) -> str:
-    try:
-        with httpx.Client(timeout=5.0) as client:
-            resp = client.get(f"{AUTH_SERVICE_URL}/internal/socios/{dni}")
-            if resp.status_code == 200:
-                data = resp.json()
-                return f"{data['nombres']} {data['apellidos']}"
-    except httpx.HTTPError:
-        pass
-    return f"Socio {dni}"
-
-
-def _crear_aportaciones(solicitud: dict, cronograma: list[dict]) -> None:
+def _crear_aportaciones(solicitud: dict) -> None:
     dni = solicitud["dni_usuario"]
-    nombre = _nombre_socio(dni)
     lote = [
         {
             "id_aportacion": str(uuid4()),
             "id_solicitud": solicitud["id_solicitud"],
+            "id_cuota": cuota.get("id_cuota"),
             "dni_socio": dni,
-            "nombre_socio": nombre,
             "numero_cuota": cuota["numero_cuota"],
             "monto_cuota": cuota["cuota"],
             "fecha_vencimiento": cuota["fecha_vencimiento"],
             "fecha_pago": None,
         }
-        for cuota in cronograma
+        for cuota in solicitud.get("cronograma", [])
     ]
     with httpx.Client(timeout=10.0) as client:
         resp = client.post(f"{PAYMENT_SERVICE_URL}/internal/aportaciones/lote", json={"items": lote})

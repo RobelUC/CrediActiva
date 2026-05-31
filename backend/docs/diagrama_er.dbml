@@ -1,0 +1,91 @@
+// CrediActiva — pegar en https://dbdiagram.io/d
+// Exportar: PNG, PDF, SQL
+
+Project CrediActiva {
+  database_type: "SQLite"
+  Note: "Modelo 3FN — microservicios"
+}
+
+// ========== AUTH-SERVICE (auth.db) ==========
+Table socios {
+  id_socio varchar(36) [pk]
+  dni varchar(8) [unique, not null]
+  nombres varchar(100) [not null]
+  apellidos varchar(100) [not null]
+  email varchar(255) [unique, not null]
+  telefono varchar(20) [not null]
+  aporte_mensual float [not null]
+  fecha_registro datetime [not null]
+  activo boolean [not null]
+  password_hash varchar(255)
+
+  Note: "auth-service"
+}
+
+// ========== CREDIT-SERVICE (credit.db) ==========
+Table tipos_credito {
+  codigo varchar(20) [pk]
+  nombre varchar(50) [not null]
+  tea_anual float [not null]
+
+  Note: "Catálogo — credit-service"
+}
+
+Table solicitudes {
+  id_solicitud varchar(36) [pk]
+  dni_usuario varchar(8) [not null, note: "FK lógica -> socios.dni"]
+  id_tipo_credito varchar(20) [not null, ref: > tipos_credito.codigo]
+  monto float [not null]
+  plazo_meses int [not null]
+  estado_preaprobacion varchar(30) [not null]
+  estado_evaluacion varchar(20) [not null]
+  mensaje text
+  observaciones text
+  fecha_registro datetime [not null]
+
+  Note: "credit-service"
+}
+
+Table evaluaciones_financieras {
+  id_evaluacion varchar(36) [pk]
+  id_solicitud varchar(36) [unique, not null, ref: - solicitudes.id_solicitud]
+  tea_aplicada float [not null]
+  tasa_mensual_efectiva float [not null]
+  cuota_mensual float [not null]
+  interes_total float [not null]
+  monto_total_a_pagar float [not null]
+}
+
+Table cuotas_credito {
+  id_cuota varchar(36) [pk]
+  id_solicitud varchar(36) [not null, ref: > solicitudes.id_solicitud]
+  numero_cuota int [not null]
+  fecha_vencimiento date [not null]
+  cuota float [not null]
+  capital float [not null]
+  interes float [not null]
+  saldo_restante float [not null]
+
+  indexes {
+    (id_solicitud, numero_cuota) [unique]
+  }
+}
+
+// ========== PAYMENT-SERVICE (payment.db) ==========
+Table aportaciones {
+  id_aportacion varchar(36) [pk]
+  id_solicitud varchar(36) [not null, note: "FK lógica -> solicitudes"]
+  id_cuota varchar(36) [note: "FK lógica -> cuotas_credito"]
+  dni_socio varchar(8) [not null, note: "FK lógica -> socios.dni"]
+  numero_cuota int [not null]
+  monto_cuota float [not null]
+  fecha_vencimiento date [not null]
+  fecha_pago date
+  estado_pago varchar(10) [not null]
+
+  indexes {
+    (id_solicitud, numero_cuota) [unique]
+  }
+
+  Note: "payment-service"
+}

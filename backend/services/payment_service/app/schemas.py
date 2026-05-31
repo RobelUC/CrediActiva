@@ -10,10 +10,10 @@ class AportacionItem(BaseModel):
     id_aportacion: str
     id_solicitud: str
     dni_socio: str
-    nombre_socio: str
     numero_cuota: int
     monto_cuota: float
     fecha_vencimiento: str
+    id_cuota: str | None = None
     fecha_pago: str | None = None
 
 

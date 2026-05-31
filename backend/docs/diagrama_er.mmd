@@ -1,0 +1,72 @@
+erDiagram
+    SOCIOS ||--o{ SOLICITUDES : "solicita (dni_usuario)"
+    TIPOS_CREDITO ||--o{ SOLICITUDES : "clasifica"
+    SOLICITUDES ||--|| EVALUACIONES_FINANCIERAS : "tiene"
+    SOLICITUDES ||--o{ CUOTAS_CREDITO : "genera"
+    SOLICITUDES ||--o{ APORTACIONES : "registra pagos"
+    CUOTAS_CREDITO ||--o| APORTACIONES : "referencia (id_cuota)"
+
+    SOCIOS {
+        string id_socio PK
+        string dni UK
+        string nombres
+        string apellidos
+        string email UK
+        string telefono
+        float aporte_mensual
+        datetime fecha_registro
+        bool activo
+        string password_hash
+    }
+
+    TIPOS_CREDITO {
+        string codigo PK
+        string nombre
+        float tea_anual
+    }
+
+    SOLICITUDES {
+        string id_solicitud PK
+        string dni_usuario FK_logica
+        string id_tipo_credito FK
+        float monto
+        int plazo_meses
+        string estado_preaprobacion
+        string estado_evaluacion
+        string mensaje
+        string observaciones
+        datetime fecha_registro
+    }
+
+    EVALUACIONES_FINANCIERAS {
+        string id_evaluacion PK
+        string id_solicitud FK_UK
+        float tea_aplicada
+        float tasa_mensual_efectiva
+        float cuota_mensual
+        float interes_total
+        float monto_total_a_pagar
+    }
+
+    CUOTAS_CREDITO {
+        string id_cuota PK
+        string id_solicitud FK
+        int numero_cuota
+        date fecha_vencimiento
+        float cuota
+        float capital
+        float interes
+        float saldo_restante
+    }
+
+    APORTACIONES {
+        string id_aportacion PK
+        string id_solicitud FK_logica
+        string id_cuota FK_logica
+        string dni_socio FK_logica
+        int numero_cuota
+        float monto_cuota
+        date fecha_vencimiento
+        date fecha_pago
+        string estado_pago
+    }

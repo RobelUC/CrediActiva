@@ -1,17 +1,22 @@
 """Auth Service — gestión de socios."""
 
-import os
+import sys
 from pathlib import Path
 
-from sqlalchemy import create_engine
+from sqlalchemy import inspect, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
+
+_SERVICES_ROOT = Path(__file__).resolve().parents[2]
+if str(_SERVICES_ROOT) not in sys.path:
+    sys.path.insert(0, str(_SERVICES_ROOT))
+
+from common.db_config import create_db_engine, is_sqlite, resolve_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = BASE_DIR / "data" / "auth.db"
-DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-DATABASE_URL = os.getenv("AUTH_DATABASE_URL", f"sqlite:///{DB_PATH.as_posix()}")
+DATABASE_URL = resolve_database_url("AUTH_DATABASE_URL", DB_PATH)
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_db_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -20,17 +25,18 @@ class Base(DeclarativeBase):
 
 
 def init_db() -> None:
-    from sqlalchemy import inspect, text
-
     from app import models  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
 
     inspector = inspect(engine)
-    if "socios" in inspector.get_table_names():
-        columnas = {c["name"] for c in inspector.get_columns("socios")}
-        if "password_hash" not in columnas:
-            with engine.begin() as conn:
-                conn.execute(
-                    text("ALTER TABLE socios ADD COLUMN password_hash VARCHAR(255)")
-                )
+    if "socios" not in inspector.get_table_names():
+        return
+
+    columnas = {c["name"] for c in inspector.get_columns("socios")}
+    if "password_hash" not in columnas:
+        with engine.begin() as conn:
+            if is_sqlite(engine):
+                conn.execute(text("ALTER TABLE socios ADD COLUMN password_hash VARCHAR(255)"))
+            else:
+                conn.execute(text("ALTER TABLE socios ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255)"))

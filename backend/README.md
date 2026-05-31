@@ -1,6 +1,6 @@
 # CrediActiva — Arquitectura de Microservicios
 
-Backend dividido en **4 microservicios + API Gateway**. Cada servicio tiene su propia base SQLite.
+Backend dividido en **4 microservicios + API Gateway**. Por defecto usa **SQLite local**; opcionalmente **Supabase (PostgreSQL)** con una sola base compartida. Ver `docs/SUPABASE.md`.
 
 ## Arquitectura
 
@@ -11,14 +11,14 @@ Angular (4200) ──► API Gateway (8000)
         ▼               ▼               ▼               ▼
   auth-service   credit-service  payment-service  portal-service
      (8001)          (8002)          (8003)          (8004)
-   auth.db         credit.db       payment.db      (sin BD)
+   auth + credit + payment (Supabase o SQLite)   (sin BD)
 ```
 
 | Servicio | Puerto | Responsabilidad | Base de datos |
 |----------|--------|-----------------|---------------|
-| **auth-service** | 8001 | Socios, perfil | `services/auth_service/data/auth.db` |
-| **credit-service** | 8002 | Solicitudes, evaluación, cronograma | `services/credit_service/data/credit.db` |
-| **payment-service** | 8003 | Cuotas y pagos | `services/payment_service/data/payment.db` |
+| **auth-service** | 8001 | Socios, perfil | Tabla `socios` (Supabase o `data/auth.db`) |
+| **credit-service** | 8002 | Solicitudes, evaluación, cronograma | Tablas crédito (Supabase o `data/credit.db`) |
+| **payment-service** | 8003 | Cuotas y pagos | Tabla `aportaciones` (Supabase o `data/payment.db`) |
 | **portal-service** | 8004 | Portal del socio, dashboard, reportes | Agrega vía HTTP |
 | **api-gateway** | 8000 | Punto de entrada único, CORS | — |
 
@@ -35,6 +35,16 @@ py -3 -m venv .venv
 .\.venv\Scripts\activate
 pip install -r services\requirements.txt
 ```
+
+### Supabase (opcional)
+
+```powershell
+copy .env.example .env
+# Edita .env con SUPABASE_DATABASE_URL desde el panel de Supabase
+# Opcional: ejecuta docs/esquema_supabase.sql en SQL Editor
+```
+
+Guía completa: **`docs/SUPABASE.md`**.
 
 ## Ejecutar (todos los servicios)
 

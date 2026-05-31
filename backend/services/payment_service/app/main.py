@@ -1,6 +1,8 @@
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
+import httpx
 from fastapi import FastAPI, HTTPException
 
 from app.database import init_db
@@ -12,6 +14,9 @@ from app.repository import (
     resumen_aportaciones,
 )
 from app.schemas import AportacionResponse, LoteAportaciones, ResumenAportaciones
+
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
+_cache_nombres: dict[str, str] = {}
 
 
 @asynccontextmanager
@@ -36,7 +41,7 @@ def crear_lote(payload: LoteAportaciones) -> dict[str, int]:
 
 @app.get("/internal/aportaciones")
 def aportaciones_internas(dni: str | None = None) -> list[dict]:
-    return listar_con_estado(dni)
+    return [_enriquecer(a) for a in listar_con_estado(dni)]
 
 
 @app.get("/internal/aportaciones/resumen")
@@ -70,17 +75,38 @@ def registrar_pago(id_aportacion: str) -> AportacionResponse:
     return _map(copia)  # type: ignore[arg-type]
 
 
+def _nombre_socio(dni: str) -> str:
+    if dni in _cache_nombres:
+        return _cache_nombres[dni]
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            resp = client.get(f"{AUTH_SERVICE_URL}/internal/socios/{dni}")
+            if resp.status_code == 200:
+                data = resp.json()
+                nombre = f"{data['nombres']} {data['apellidos']}"
+                _cache_nombres[dni] = nombre
+                return nombre
+    except httpx.HTTPError:
+        pass
+    return f"Socio {dni}"
+
+
+def _enriquecer(a: dict) -> dict:
+    return {**a, "nombre_socio": _nombre_socio(a["dni_socio"])}
+
+
 def _map(a: dict) -> AportacionResponse:
     from app.repository import _estado
 
+    enriquecida = _enriquecer(a)
     return AportacionResponse(
-        id_aportacion=a["id_aportacion"],
-        id_solicitud=a["id_solicitud"],
-        dni_socio=a["dni_socio"],
-        nombre_socio=a.get("nombre_socio", ""),
-        numero_cuota=a["numero_cuota"],
-        monto_cuota=a["monto_cuota"],
-        fecha_vencimiento=a["fecha_vencimiento"],
-        estado=a.get("estado") or _estado(a),
-        fecha_pago=a.get("fecha_pago"),
+        id_aportacion=enriquecida["id_aportacion"],
+        id_solicitud=enriquecida["id_solicitud"],
+        dni_socio=enriquecida["dni_socio"],
+        nombre_socio=enriquecida["nombre_socio"],
+        numero_cuota=enriquecida["numero_cuota"],
+        monto_cuota=enriquecida["monto_cuota"],
+        fecha_vencimiento=enriquecida["fecha_vencimiento"],
+        estado=enriquecida.get("estado") or _estado(enriquecida),
+        fecha_pago=enriquecida.get("fecha_pago"),
     )
