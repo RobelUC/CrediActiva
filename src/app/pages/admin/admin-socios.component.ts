@@ -1,6 +1,7 @@
-import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { SoloNumerosDirective } from '../../core/directives/solo-numeros.directive';
+import { SolesPipe } from '../../core/pipes/soles.pipe';
 import type { Socio, SocioCreate, SocioUpdate } from '../../core/models/admin.models';
 import { AdminService } from '../../core/services/admin.service';
 
@@ -18,7 +19,7 @@ const SOCIO_VACIO: SocioCreate = {
 @Component({
   selector: 'ca-admin-socios',
   standalone: true,
-  imports: [FormsModule, CurrencyPipe],
+  imports: [FormsModule, SolesPipe, SoloNumerosDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-socios.component.html',
   styleUrl: './admin-shared.scss',

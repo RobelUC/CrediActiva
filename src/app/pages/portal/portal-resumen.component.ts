@@ -1,4 +1,5 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
+import { SolesPipe } from '../../core/pipes/soles.pipe';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { ResumenCuenta } from '../../core/models/portal.models';
@@ -8,7 +9,7 @@ import { PortalSocioService } from '../../core/services/portal-socio.service';
 @Component({
   selector: 'ca-portal-resumen',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, SolesPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './portal-resumen.component.html',
   styleUrl: './portal-shared.scss',

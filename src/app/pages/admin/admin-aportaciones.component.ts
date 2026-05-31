@@ -1,4 +1,5 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
+import { SolesPipe } from '../../core/pipes/soles.pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,7 +17,7 @@ import { badgeAport } from './admin.utils';
 @Component({
   selector: 'ca-admin-aportaciones',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe],
+  imports: [DatePipe, SolesPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-aportaciones.component.html',
   styleUrl: './admin-shared.scss',

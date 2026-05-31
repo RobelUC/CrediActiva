@@ -26,14 +26,14 @@
       <div class="col-6 col-lg-3">
         <div class="admin-kpi admin-kpi--ok">
           <span class="admin-kpi__label">Monto colocado</span>
-          <strong>{{ d.monto_colocado | currency : 'PEN' : 'symbol' : '1.0-0' }}</strong>
+          <strong>{{ d.monto_colocado | soles : '1.0-0' }}</strong>
           <small>{{ d.solicitudes_aprobadas }} aprobadas</small>
         </div>
       </div>
       <div class="col-6 col-lg-3">
         <div class="admin-kpi admin-kpi--danger">
           <span class="admin-kpi__label">Por cobrar</span>
-          <strong>{{ d.monto_por_cobrar | currency : 'PEN' : 'symbol' : '1.0-0' }}</strong>
+          <strong>{{ d.monto_por_cobrar | soles : '1.0-0' }}</strong>
           <small>{{ d.aportaciones.vencidas }} vencidas</small>
         </div>
       </div>
@@ -68,7 +68,7 @@
               <dt class="col-6">Pendientes</dt>
               <dd class="col-6">{{ d.aportaciones.pendientes }}</dd>
               <dt class="col-6">Recaudado</dt>
-              <dd class="col-6">{{ d.aportaciones.monto_pagado | currency : 'PEN' : 'symbol' : '1.0-0' }}</dd>
+              <dd class="col-6">{{ d.aportaciones.monto_pagado | soles : '1.0-0' }}</dd>
             </dl>
             <a routerLink="/admin/aportaciones" class="btn btn-sm btn-outline-primary mt-3">
               Control de aportaciones

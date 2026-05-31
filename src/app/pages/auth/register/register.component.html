@@ -1,179 +1,181 @@
-<div class="ca-auth-card">
-  <div class="ca-auth-card__tabs">
-    <a class="ca-auth-card__tab" routerLink="/login">Iniciar sesión</a>
-    <span class="ca-auth-card__tab ca-auth-card__tab--active">Registrarse</span>
-  </div>
-
-  <h1 class="ca-auth-card__title">Crear cuenta de socio</h1>
-  <p class="ca-auth-card__subtitle">
-    Ingrese su DNI y completaremos sus nombres y apellidos desde RENIEC.
-  </p>
-
-  <form (submit)="$event.preventDefault(); registrar()" novalidate>
-    <div class="mb-3">
-      <label class="form-label" for="reg-dni">DNI</label>
-      <input
-        id="reg-dni"
-        type="text"
-        class="form-control ca-auth-input"
-        [class.is-invalid]="dniInvalido()"
-        [class.is-valid]="dniValidadoReniec()"
-        [value]="dni()"
-        maxlength="8"
-        inputmode="numeric"
-        placeholder="8 dígitos"
-        (input)="actualizarDni($any($event.target).value)"
-      />
-      @if (consultandoDni()) {
-        <div class="form-text text-primary">Consultando RENIEC…</div>
-      } @else if (dniValidadoReniec() && avisoDni()) {
-        <div class="valid-feedback d-block">{{ avisoDni() }}</div>
-      } @else if (dniFormatoInvalido()) {
-        <div class="invalid-feedback d-block">El DNI debe tener 8 dígitos numéricos.</div>
-      } @else if (dniInvalido() && avisoDni()) {
-        <div class="invalid-feedback d-block">{{ avisoDni() }}</div>
-      }
-    </div>
-
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label" for="reg-nombres">Nombres</label>
-        <input
-          id="reg-nombres"
-          type="text"
-          class="form-control ca-auth-input"
-          [class.bg-light]="dniValidadoReniec()"
-          [value]="nombres()"
-          [readonly]="consultandoDni()"
-          autocomplete="given-name"
-          placeholder="Se completa con su DNI"
-          (input)="actualizarNombres($any($event.target).value)"
-        />
-      </div>
-      <div class="col-md-6">
-        <label class="form-label" for="reg-apellidos">Apellidos</label>
-        <input
-          id="reg-apellidos"
-          type="text"
-          class="form-control ca-auth-input"
-          [class.bg-light]="dniValidadoReniec()"
-          [value]="apellidos()"
-          [readonly]="consultandoDni()"
-          autocomplete="family-name"
-          placeholder="Se completa con su DNI"
-          (input)="actualizarApellidos($any($event.target).value)"
-        />
-      </div>
-    </div>
-
-    <div class="mb-3 mt-3">
-      <label class="form-label" for="reg-email">Correo electrónico</label>
-      <input
-        id="reg-email"
-        type="email"
-        class="form-control ca-auth-input"
-        [class.is-invalid]="emailInvalido()"
-        [value]="email()"
-        autocomplete="email"
-        placeholder="correo@ejemplo.com"
-        (input)="actualizarEmail($any($event.target).value)"
-      />
-      @if (emailInvalido()) {
-        <div class="invalid-feedback d-block">Ingrese un correo válido.</div>
-      }
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="reg-telefono">Celular</label>
-      <input
-        id="reg-telefono"
-        type="tel"
-        class="form-control ca-auth-input"
-        [class.is-invalid]="telefonoInvalido()"
-        [value]="telefono()"
-        maxlength="9"
-        inputmode="numeric"
-        placeholder="9 dígitos"
-        (input)="actualizarTelefono($any($event.target).value)"
-      />
-      @if (telefonoInvalido()) {
-        <div class="invalid-feedback d-block">Celular peruano de 9 dígitos.</div>
-      }
-    </div>
-
-    <div class="row g-3 mb-3">
-      <div class="col-md-6">
-        <label class="form-label" for="reg-password">Contraseña</label>
-        <input
-          id="reg-password"
-          [type]="mostrarPassword() ? 'text' : 'password'"
-          class="form-control ca-auth-input"
-          [class.is-invalid]="passwordInvalida()"
-          [value]="password()"
-          autocomplete="new-password"
-          (input)="actualizarPassword($any($event.target).value)"
-        />
-        @if (passwordInvalida()) {
-          <div class="invalid-feedback d-block">Mínimo 6 caracteres.</div>
-        }
-      </div>
-      <div class="col-md-6">
-        <label class="form-label" for="reg-confirm">Confirmar contraseña</label>
-        <input
-          id="reg-confirm"
-          type="password"
-          class="form-control ca-auth-input"
-          [class.is-invalid]="confirmacionInvalida()"
-          [value]="confirmarPassword()"
-          autocomplete="new-password"
-          (input)="actualizarConfirmar($any($event.target).value)"
-        />
-        @if (confirmacionInvalida()) {
-          <div class="invalid-feedback d-block">Las contraseñas no coinciden.</div>
-        }
-      </div>
-    </div>
-
-    <div class="form-check mb-3">
-      <input
-        id="reg-terminos"
-        type="checkbox"
-        class="form-check-input"
-        [checked]="aceptaTerminos()"
-        (change)="aceptaTerminos.set($any($event.target).checked)"
-      />
-      <label class="form-check-label small" for="reg-terminos">
-        Acepto los términos y la política de privacidad de CrediActiva.
-      </label>
-    </div>
-
-    @if (mensaje()) {
-      <div
-        class="alert mb-3"
-        [class.alert-success]="!esError()"
-        [class.alert-danger]="esError()"
-        role="status"
-      >
-        {{ mensaje() }}
-      </div>
-    }
-
-    <button
-      type="submit"
-      class="ca-btn ca-btn--primary w-100 mb-3"
-      [disabled]="!formularioValido() || enviando() || consultandoDni()"
-    >
-      @if (enviando()) {
-        Registrando…
-      } @else {
-        Crear cuenta
-      }
-    </button>
-  </form>
-
-  <p class="ca-auth-card__footer text-center mb-0">
-    ¿Ya es socio?
-    <a routerLink="/login" class="ca-auth-card__link">Inicie sesión</a>
-  </p>
-</div>
-
+<div class="ca-auth-card">
+  <div class="ca-auth-card__tabs">
+    <a class="ca-auth-card__tab" routerLink="/login">Iniciar sesión</a>
+    <span class="ca-auth-card__tab ca-auth-card__tab--active">Registrarse</span>
+  </div>
+
+  <h1 class="ca-auth-card__title">Crear cuenta de socio</h1>
+  <p class="ca-auth-card__subtitle">
+    Ingrese su DNI y completaremos sus nombres y apellidos desde RENIEC.
+  </p>
+
+  <form (submit)="$event.preventDefault(); registrar()" novalidate>
+    <div class="mb-3">
+      <label class="form-label" for="reg-dni">DNI</label>
+      <input
+        id="reg-dni"
+        type="text"
+        class="form-control ca-auth-input"
+        caSoloNumeros
+        [class.is-invalid]="dniInvalido()"
+        [class.is-valid]="dniValidadoReniec()"
+        [value]="dni()"
+        maxlength="8"
+        inputmode="numeric"
+        placeholder="8 dígitos"
+        (input)="actualizarDni($any($event.target).value)"
+      />
+      @if (consultandoDni()) {
+        <div class="form-text text-primary">Consultando RENIEC…</div>
+      } @else if (dniValidadoReniec() && avisoDni()) {
+        <div class="valid-feedback d-block">{{ avisoDni() }}</div>
+      } @else if (dniFormatoInvalido()) {
+        <div class="invalid-feedback d-block">El DNI debe tener 8 dígitos numéricos.</div>
+      } @else if (dniInvalido() && avisoDni()) {
+        <div class="invalid-feedback d-block">{{ avisoDni() }}</div>
+      }
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="reg-nombres">Nombres</label>
+        <input
+          id="reg-nombres"
+          type="text"
+          class="form-control ca-auth-input"
+          [class.bg-light]="dniValidadoReniec()"
+          [value]="nombres()"
+          [readonly]="consultandoDni()"
+          autocomplete="given-name"
+          placeholder="Se completa con su DNI"
+          (input)="actualizarNombres($any($event.target).value)"
+        />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="reg-apellidos">Apellidos</label>
+        <input
+          id="reg-apellidos"
+          type="text"
+          class="form-control ca-auth-input"
+          [class.bg-light]="dniValidadoReniec()"
+          [value]="apellidos()"
+          [readonly]="consultandoDni()"
+          autocomplete="family-name"
+          placeholder="Se completa con su DNI"
+          (input)="actualizarApellidos($any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <div class="mb-3 mt-3">
+      <label class="form-label" for="reg-email">Correo electrónico</label>
+      <input
+        id="reg-email"
+        type="email"
+        class="form-control ca-auth-input"
+        [class.is-invalid]="emailInvalido()"
+        [value]="email()"
+        autocomplete="email"
+        placeholder="correo@ejemplo.com"
+        (input)="actualizarEmail($any($event.target).value)"
+      />
+      @if (emailInvalido()) {
+        <div class="invalid-feedback d-block">Ingrese un correo válido.</div>
+      }
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="reg-telefono">Celular</label>
+      <input
+        id="reg-telefono"
+        type="tel"
+        class="form-control ca-auth-input"
+        caSoloNumeros
+        [class.is-invalid]="telefonoInvalido()"
+        [value]="telefono()"
+        maxlength="9"
+        inputmode="numeric"
+        placeholder="9 dígitos"
+        (input)="actualizarTelefono($any($event.target).value)"
+      />
+      @if (telefonoInvalido()) {
+        <div class="invalid-feedback d-block">Celular peruano de 9 dígitos.</div>
+      }
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label" for="reg-password">Contraseña</label>
+        <input
+          id="reg-password"
+          [type]="mostrarPassword() ? 'text' : 'password'"
+          class="form-control ca-auth-input"
+          [class.is-invalid]="passwordInvalida()"
+          [value]="password()"
+          autocomplete="new-password"
+          (input)="actualizarPassword($any($event.target).value)"
+        />
+        @if (passwordInvalida()) {
+          <div class="invalid-feedback d-block">Mínimo 6 caracteres.</div>
+        }
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="reg-confirm">Confirmar contraseña</label>
+        <input
+          id="reg-confirm"
+          type="password"
+          class="form-control ca-auth-input"
+          [class.is-invalid]="confirmacionInvalida()"
+          [value]="confirmarPassword()"
+          autocomplete="new-password"
+          (input)="actualizarConfirmar($any($event.target).value)"
+        />
+        @if (confirmacionInvalida()) {
+          <div class="invalid-feedback d-block">Las contraseñas no coinciden.</div>
+        }
+      </div>
+    </div>
+
+    <div class="form-check mb-3">
+      <input
+        id="reg-terminos"
+        type="checkbox"
+        class="form-check-input"
+        [checked]="aceptaTerminos()"
+        (change)="aceptaTerminos.set($any($event.target).checked)"
+      />
+      <label class="form-check-label small" for="reg-terminos">
+        Acepto los términos y la política de privacidad de CrediActiva.
+      </label>
+    </div>
+
+    @if (mensaje()) {
+      <div
+        class="alert mb-3"
+        [class.alert-success]="!esError()"
+        [class.alert-danger]="esError()"
+        role="status"
+      >
+        {{ mensaje() }}
+      </div>
+    }
+
+    <button
+      type="submit"
+      class="ca-btn ca-btn--primary w-100 mb-3"
+      [disabled]="!formularioValido() || enviando() || consultandoDni()"
+    >
+      @if (enviando()) {
+        Registrando…
+      } @else {
+        Crear cuenta
+      }
+    </button>
+  </form>
+
+  <p class="ca-auth-card__footer text-center mb-0">
+    ¿Ya es socio?
+    <a routerLink="/login" class="ca-auth-card__link">Inicie sesión</a>
+  </p>
+</div>
+

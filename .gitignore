@@ -4,5 +4,6 @@ dist/
 *.log
 .DS_Store
 backend/.venv/
+backend/.env
 backend/*.db
 backend/services/**/data/

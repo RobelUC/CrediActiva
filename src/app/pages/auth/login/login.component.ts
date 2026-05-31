@@ -13,13 +13,14 @@ import {
   DEMO_DNI,
   DEMO_PASSWORD,
 } from '../../../core/mock/frontend-demo.mock';
+import { SoloNumerosDirective } from '../../../core/directives/solo-numeros.directive';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'ca-login',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, SoloNumerosDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',

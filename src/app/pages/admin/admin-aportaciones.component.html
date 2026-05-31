@@ -23,7 +23,7 @@
       <div class="col-6 col-md-3">
         <div class="admin-kpi admin-kpi--ok">
           <span class="admin-kpi__label">Pagadas</span><strong>{{ r.pagadas }}</strong>
-          <small>{{ r.monto_pagado | currency : 'PEN' : 'symbol' : '1.0-0' }}</small>
+          <small>{{ r.monto_pagado | soles : '1.0-0' }}</small>
         </div>
       </div>
       <div class="col-6 col-md-3">
@@ -60,7 +60,7 @@
             <tr>
               <td><strong>{{ a.nombre_socio }}</strong><br /><small>{{ a.dni_socio }}</small></td>
               <td>{{ a.numero_cuota }}</td>
-              <td>{{ a.monto_cuota | currency : 'PEN' : 'symbol' : '1.2-2' }}</td>
+              <td>{{ a.monto_cuota | soles : '1.2-2' }}</td>
               <td>{{ a.fecha_vencimiento }}</td>
               <td><span class="badge bg-{{ badgeAport(a.estado) }}">{{ a.estado }}</span></td>
               <td>

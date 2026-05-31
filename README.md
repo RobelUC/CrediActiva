@@ -39,7 +39,9 @@ pip install -r services\requirements.txt
 
 API Gateway: `http://localhost:8000` · Health: `http://localhost:8000/health`
 
-Arquitectura: **4 microservicios + API Gateway**, cada uno con SQLite propia. Ver `backend/README.md`.
+Arquitectura: **4 microservicios + API Gateway** (SQLite local o **Supabase**). Ver `backend/README.md` y `backend/docs/SUPABASE.md`.
+
+**Modelo de datos (3FN):** ver [`backend/docs/MODELO_BASE_DATOS.md`](backend/docs/MODELO_BASE_DATOS.md), [`backend/docs/esquema_3fn.sql`](backend/docs/esquema_3fn.sql) y diagrama ER [`backend/docs/diagrama_er_crediactiva.pdf`](backend/docs/diagrama_er_crediactiva.pdf) (PNG: [`diagrama_er_crediactiva.png`](backend/docs/diagrama_er_crediactiva.png)).
 
 ### Panel de administración
 

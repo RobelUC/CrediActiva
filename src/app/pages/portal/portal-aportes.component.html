@@ -66,7 +66,7 @@
             <tr>
               <td>N.° {{ a.numero_cuota }}</td>
               <td>{{ a.tipo_credito || '—' }}</td>
-              <td>{{ a.monto_cuota | currency : 'PEN' : 'symbol' : '1.2-2' }}</td>
+              <td>{{ a.monto_cuota | soles : '1.2-2' }}</td>
               <td>{{ a.fecha_vencimiento }}</td>
               <td>{{ a.fecha_pago ?? '—' }}</td>
               <td>

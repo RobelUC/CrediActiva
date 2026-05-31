@@ -1,4 +1,5 @@
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
+import { SolesPipe } from '../../core/pipes/soles.pipe';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { SolicitudAdmin } from '../../core/models/admin.models';
@@ -8,7 +9,7 @@ import { badgeEval } from './admin.utils';
 @Component({
   selector: 'ca-admin-prestamos',
   standalone: true,
-  imports: [FormsModule, CurrencyPipe, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, SolesPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-prestamos.component.html',
   styleUrl: './admin-shared.scss',

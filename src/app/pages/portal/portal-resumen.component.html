@@ -22,13 +22,13 @@
         <div class="portal-kpi">
           <span class="portal-kpi__label">Créditos activos</span>
           <strong>{{ r.creditos_activos }}</strong>
-          <small>{{ r.monto_total_credito | currency : 'PEN' : 'symbol' : '1.0-0' }} colocados</small>
+          <small>{{ r.monto_total_credito | soles : '1.0-0' }} colocados</small>
         </div>
       </div>
       <div class="col-md-6 col-xl-3">
         <div class="portal-kpi portal-kpi--warn">
           <span class="portal-kpi__label">Saldo pendiente</span>
-          <strong>{{ r.saldo_pendiente | currency : 'PEN' : 'symbol' : '1.2-2' }}</strong>
+          <strong>{{ r.saldo_pendiente | soles : '1.2-2' }}</strong>
           <small>{{ r.cuotas_pendientes }} cuota(s) por pagar</small>
         </div>
       </div>
@@ -53,7 +53,7 @@
           <div class="card-body">
             @if (r.proxima_cuota; as pc) {
               <p class="display-6 text-success fw-bold mb-1">
-                {{ pc.monto | currency : 'PEN' : 'symbol' : '1.2-2' }}
+                {{ pc.monto | soles : '1.2-2' }}
               </p>
               <p class="mb-0">
                 Cuota N.° {{ pc.numero_cuota }} · Vence el
@@ -77,7 +77,7 @@
               <dt class="col-5">Correo</dt>
               <dd class="col-7">{{ r.email }}</dd>
               <dt class="col-5">Aporte mensual</dt>
-              <dd class="col-7">{{ r.aporte_mensual | currency : 'PEN' : 'symbol' : '1.2-2' }}</dd>
+              <dd class="col-7">{{ r.aporte_mensual | soles : '1.2-2' }}</dd>
             </dl>
           </div>
         </div>

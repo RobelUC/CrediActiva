@@ -1,4 +1,5 @@
-import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
+import { SolesPipe } from '../../core/pipes/soles.pipe';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import type { CreditoSocio } from '../../core/models/portal.models';
 import { AuthService } from '../../core/services/auth.service';
@@ -7,7 +8,7 @@ import { PortalSocioService } from '../../core/services/portal-socio.service';
 @Component({
   selector: 'ca-portal-creditos',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, SolesPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './portal-creditos.component.html',
   styleUrl: './portal-shared.scss',

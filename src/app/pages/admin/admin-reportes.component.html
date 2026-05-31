@@ -18,7 +18,7 @@
           <div class="admin-kpi">
             <span class="admin-kpi__label">{{ item.tipo_credito }}</span>
             <strong>{{ item.cantidad }} ops.</strong>
-            <small>{{ item.monto_total | currency : 'PEN' : 'symbol' : '1.0-0' }}</small>
+            <small>{{ item.monto_total | soles : '1.0-0' }}</small>
           </div>
         </div>
       }
@@ -32,7 +32,7 @@
             <dt class="col-sm-6">{{ labelResumen(entry.key) }}</dt>
             <dd class="col-sm-6">
               @if (entry.key.includes('monto') || entry.key.includes('interes')) {
-                {{ entry.value | currency : 'PEN' : 'symbol' : '1.2-2' }}
+                {{ entry.value | soles : '1.2-2' }}
               } @else if (entry.key.includes('indice')) {
                 {{ entry.value | number : '1.1-1' }}%
               } @else {
@@ -66,7 +66,7 @@
                 <td class="text-break"><small>{{ s.id_solicitud.slice(0, 8) }}…</small></td>
                 <td>{{ s.dni_usuario }}</td>
                 <td>{{ s.tipo_credito }}</td>
-                <td>{{ s.monto | currency : 'PEN' : 'symbol' : '1.0-0' }}</td>
+                <td>{{ s.monto | soles : '1.0-0' }}</td>
                 <td><span class="badge bg-{{ badgeEval(s.estado_evaluacion) }}">{{ s.estado_evaluacion }}</span></td>
                 <td>{{ s.tea_aplicada ?? '—' }}</td>
                 <td>{{ s.cuota_mensual ? (s.cuota_mensual | number : '1.2-2') : '—' }}</td>

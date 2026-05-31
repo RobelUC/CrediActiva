@@ -56,7 +56,9 @@
                   <label class="form-label">Celular</label>
                   <input
                     class="form-control"
+                    caSoloNumeros
                     maxlength="9"
+                    inputmode="numeric"
                     [class.is-invalid]="telefonoInvalido()"
                     [value]="editando().telefono"
                     (input)="actualizarCampo('telefono', $any($event.target).value.replace(/\D/g, '').slice(0, 9))"

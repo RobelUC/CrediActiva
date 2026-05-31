@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { resumenASolicitudRequest } from '../../core/mappers/solicitud.mapper';
 import type { SolicitudResponse } from '../../core/models/solicitud.models';
+import { SoloNumerosDirective } from '../../core/directives/solo-numeros.directive';
 import { AuthService } from '../../core/services/auth.service';
 import { CreditService } from '../../core/services/credit.service';
 import {
@@ -29,7 +30,7 @@ import {
 @Component({
   selector: 'ca-credit-simulator',
   standalone: true,
-  imports: [DecimalPipe, FormsModule, RouterLink],
+  imports: [DecimalPipe, FormsModule, RouterLink, SoloNumerosDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './credit-simulator.component.html',
   styleUrl: './credit-simulator.component.scss',

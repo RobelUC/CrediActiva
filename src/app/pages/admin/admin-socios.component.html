@@ -41,7 +41,9 @@
               <label class="form-label">DNI</label>
               <input
                 class="form-control"
+                caSoloNumeros
                 maxlength="8"
+                inputmode="numeric"
                 [readonly]="modoEdicion()"
                 [value]="formulario().dni"
                 (input)="actualizarCampo('dni', $any($event.target).value.replace(/\D/g, '').slice(0, 8))"
@@ -51,7 +53,9 @@
               <label class="form-label">Celular</label>
               <input
                 class="form-control"
+                caSoloNumeros
                 maxlength="9"
+                inputmode="numeric"
                 [value]="formulario().telefono"
                 (input)="actualizarCampo('telefono', $any($event.target).value.replace(/\D/g, '').slice(0, 9))"
               />
@@ -153,7 +157,7 @@
                   <td>
                     <small>{{ s.email }}<br />{{ s.telefono }}</small>
                   </td>
-                  <td>{{ s.aporte_mensual | currency : 'PEN' : 'symbol' : '1.2-2' }}</td>
+                  <td>{{ s.aporte_mensual | soles : '1.2-2' }}</td>
                   <td>
                     @if (s.activo) {
                       <span class="badge bg-success">Activo</span>

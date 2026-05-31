@@ -26,12 +26,13 @@
         id="login-dni"
         type="text"
         class="form-control ca-auth-input"
+        caSoloNumeros
         [class.is-invalid]="dniInvalido()"
         [value]="dni()"
         maxlength="8"
         inputmode="numeric"
-        placeholder="12345678"
         autocomplete="username"
+        placeholder="12345678"
         (input)="actualizarDni($any($event.target).value)"
       />
       @if (dniInvalido()) {

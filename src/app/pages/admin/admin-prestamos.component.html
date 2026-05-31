@@ -27,7 +27,7 @@
                 <span class="badge bg-{{ badgeEval(s.estado_evaluacion) }}">{{ s.estado_evaluacion }}</span>
               </div>
               <small class="text-muted">
-                {{ s.tipo_credito }} · {{ s.monto | currency : 'PEN' : 'symbol' : '1.0-0' }} · {{ s.plazo_meses }} meses
+                {{ s.tipo_credito }} · {{ s.monto | soles : '1.0-0' }} · {{ s.plazo_meses }} meses
               </small>
             </button>
           } @empty {
@@ -46,7 +46,7 @@
           <div class="card-body">
             <dl class="row small mb-3">
               <dt class="col-4">DNI</dt><dd class="col-8">{{ sel.dni_usuario }}</dd>
-              <dt class="col-4">Monto</dt><dd class="col-8">{{ sel.monto | currency : 'PEN' : 'symbol' : '1.2-2' }}</dd>
+              <dt class="col-4">Monto</dt><dd class="col-8">{{ sel.monto | soles : '1.2-2' }}</dd>
               <dt class="col-4">Plazo</dt><dd class="col-8">{{ sel.plazo_meses }} meses</dd>
               <dt class="col-4">Producto</dt><dd class="col-8">{{ sel.tipo_credito }}</dd>
             </dl>

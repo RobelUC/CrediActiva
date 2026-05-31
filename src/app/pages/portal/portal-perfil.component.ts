@@ -1,4 +1,5 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
+import { SoloNumerosDirective } from '../../core/directives/solo-numeros.directive';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,7 +16,7 @@ import { PortalSocioService } from '../../core/services/portal-socio.service';
 @Component({
   selector: 'ca-portal-perfil',
   standalone: true,
-  imports: [FormsModule, CurrencyPipe, DatePipe],
+  imports: [FormsModule, DatePipe, SoloNumerosDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './portal-perfil.component.html',
   styleUrl: './portal-shared.scss',

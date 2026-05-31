@@ -105,6 +105,7 @@
               id="dni"
               type="text"
               class="form-control form-control-lg"
+              caSoloNumeros
               [class.is-invalid]="dniUsuario().length > 0 && !esDniValido()"
               [value]="dniUsuario()"
               maxlength="8"

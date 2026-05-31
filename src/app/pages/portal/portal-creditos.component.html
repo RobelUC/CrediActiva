@@ -21,7 +21,7 @@
                   <strong>{{ c.tipo_credito }}</strong>
                   <br />
                   <small class="text-muted">
-                    {{ c.monto | currency : 'PEN' : 'symbol' : '1.0-0' }} · {{ c.plazo_meses }} meses
+                    {{ c.monto | soles : '1.0-0' }} · {{ c.plazo_meses }} meses
                   </small>
                 </div>
                 <span class="badge bg-{{ badgeEstado(c.estado_evaluacion) }}">
@@ -47,11 +47,11 @@
               <dt class="col-4">ID</dt>
               <dd class="col-8 text-break">{{ c.id_solicitud }}</dd>
               <dt class="col-4">Monto</dt>
-              <dd class="col-8">{{ c.monto | currency : 'PEN' : 'symbol' : '1.2-2' }}</dd>
+              <dd class="col-8">{{ c.monto | soles : '1.2-2' }}</dd>
               <dt class="col-4">Cuota mensual</dt>
-              <dd class="col-8">{{ c.cuota_mensual | currency : 'PEN' : 'symbol' : '1.2-2' }}</dd>
+              <dd class="col-8">{{ c.cuota_mensual | soles : '1.2-2' }}</dd>
               <dt class="col-4">Saldo pendiente</dt>
-              <dd class="col-8">{{ c.saldo_pendiente | currency : 'PEN' : 'symbol' : '1.2-2' }}</dd>
+              <dd class="col-8">{{ c.saldo_pendiente | soles : '1.2-2' }}</dd>
               <dt class="col-4">Cuotas pagadas</dt>
               <dd class="col-8">{{ c.cuotas_pagadas }} / {{ c.plazo_meses }}</dd>
               <dt class="col-4">Fecha solicitud</dt>

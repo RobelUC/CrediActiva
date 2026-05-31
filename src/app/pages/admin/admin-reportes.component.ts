@@ -1,4 +1,5 @@
-import { CurrencyPipe, DatePipe, DecimalPipe, KeyValuePipe } from '@angular/common';
+import { DatePipe, DecimalPipe, KeyValuePipe } from '@angular/common';
+import { SolesPipe } from '../../core/pipes/soles.pipe';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import type { ReporteAuditoria } from '../../core/models/admin.models';
 import { AdminService } from '../../core/services/admin.service';
@@ -7,7 +8,7 @@ import { badgeEval } from './admin.utils';
 @Component({
   selector: 'ca-admin-reportes',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, DecimalPipe, KeyValuePipe],
+  imports: [DatePipe, DecimalPipe, KeyValuePipe, SolesPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-reportes.component.html',
   styleUrl: './admin-shared.scss',

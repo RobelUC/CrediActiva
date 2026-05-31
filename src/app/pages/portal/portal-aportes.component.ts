@@ -1,4 +1,4 @@
-import { CurrencyPipe } from '@angular/common';
+import { SolesPipe } from '../../core/pipes/soles.pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,7 +14,7 @@ import { PortalSocioService } from '../../core/services/portal-socio.service';
 @Component({
   selector: 'ca-portal-aportes',
   standalone: true,
-  imports: [CurrencyPipe],
+  imports: [SolesPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './portal-aportes.component.html',
   styleUrl: './portal-shared.scss',
