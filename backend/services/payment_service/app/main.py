@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException
 from app.database import init_db
 from app.repository import (
     actualizar_aportacion,
+    eliminar_por_dni,
     guardar_lote,
     listar_con_estado,
     obtener_aportacion,
@@ -47,6 +48,11 @@ def aportaciones_internas(dni: str | None = None) -> list[dict]:
 @app.get("/internal/aportaciones/resumen")
 def resumen_interno() -> dict:
     return resumen_aportaciones()
+
+
+@app.delete("/internal/datos-socio/{dni}")
+def eliminar_datos_socio(dni: str) -> dict[str, int]:
+    return {"aportaciones_eliminadas": eliminar_por_dni(dni)}
 
 
 @app.get("/api/v1/admin/aportaciones", response_model=list[AportacionResponse])

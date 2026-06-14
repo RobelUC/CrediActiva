@@ -192,3 +192,13 @@ def actualizar_solicitud(id_solicitud: str, datos: dict[str, Any]) -> dict[str, 
 
         db.commit()
         return _to_dict(_cargar_solicitud(db, id_solicitud))  # type: ignore[arg-type]
+
+
+def eliminar_por_dni(dni: str) -> int:
+    with SessionLocal() as db:
+        solicitudes = db.query(Solicitud).filter(Solicitud.dni_usuario == dni).all()
+        cantidad = len(solicitudes)
+        for solicitud in solicitudes:
+            db.delete(solicitud)
+        db.commit()
+        return cantidad

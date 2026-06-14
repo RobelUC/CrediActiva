@@ -1,15 +1,19 @@
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from uuid import uuid4
 
+import httpx
 from fastapi import FastAPI, HTTPException, status
 
 from app.auth_routes import router as auth_router
 from app.consulta_dni import router as consulta_dni_router
 from app.database import init_db
 from app.demo_data import sembrar_cuentas_demo
+from app.roles_env import aplicar_roles_desde_env
 from app.repository import (
     actualizar_socio,
+    borrar_socio_permanente,
     eliminar_socio,
     guardar_socio,
     listar_socios,
@@ -18,12 +22,17 @@ from app.repository import (
     obtener_por_id,
 )
 from app.schemas import PerfilSocioUpdate, SocioCreate, SocioResponse, SocioUpdate
+from app.security import hash_password
+
+CREDIT_SERVICE_URL = os.getenv("CREDIT_SERVICE_URL", "http://localhost:8002")
+PAYMENT_SERVICE_URL = os.getenv("PAYMENT_SERVICE_URL", "http://localhost:8003")
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
     sembrar_cuentas_demo()
+    aplicar_roles_desde_env()
     yield
 
 
@@ -52,6 +61,7 @@ def registrar_socio(payload: SocioCreate) -> SocioResponse:
         "aporte_mensual": round(payload.aporte_mensual, 2),
         "fecha_registro": datetime.now(timezone.utc),
         "activo": True,
+        "password_hash": hash_password(payload.password),
     }
     return SocioResponse(**guardar_socio(registro))
 
@@ -104,6 +114,48 @@ def desactivar_socio(id_socio: str) -> SocioResponse:
     if not socio:
         raise HTTPException(status_code=404, detail="Socio no encontrado.")
     return SocioResponse(**socio)
+
+
+@app.delete("/api/v1/admin/socios/{id_socio}/permanente")
+def eliminar_socio_permanente(id_socio: str) -> dict:
+    socio = obtener_por_id(id_socio)
+    if not socio:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+
+    if socio.get("rol") == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No se puede eliminar definitivamente una cuenta administrador.",
+        )
+
+    dni = socio["dni"]
+    try:
+        with httpx.Client(timeout=15.0) as client:
+            resp_pago = client.delete(f"{PAYMENT_SERVICE_URL}/internal/datos-socio/{dni}")
+            resp_credito = client.delete(f"{CREDIT_SERVICE_URL}/internal/datos-socio/{dni}")
+            if resp_pago.status_code >= 400 or resp_credito.status_code >= 400:
+                raise HTTPException(
+                    status_code=502,
+                    detail="No se pudieron eliminar los datos relacionados del socio.",
+                )
+            datos_pago = resp_pago.json()
+            datos_credito = resp_credito.json()
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Error de comunicación con microservicios al eliminar datos del socio.",
+        ) from exc
+
+    eliminado = borrar_socio_permanente(id_socio)
+    if not eliminado:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+
+    return {
+        "mensaje": "Socio eliminado definitivamente.",
+        "socio": SocioResponse(**eliminado),
+        "aportaciones_eliminadas": datos_pago.get("aportaciones_eliminadas", 0),
+        "solicitudes_eliminadas": datos_credito.get("solicitudes_eliminadas", 0),
+    }
 
 
 @app.get("/internal/socios", response_model=list[SocioResponse])

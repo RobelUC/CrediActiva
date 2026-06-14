@@ -59,6 +59,7 @@ export interface SocioCreate {
   email: string;
   telefono: string;
   aporte_mensual: number;
+  password: string;
 }
 
 export interface SocioUpdate {

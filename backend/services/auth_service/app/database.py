@@ -40,3 +40,11 @@ def init_db() -> None:
                 conn.execute(text("ALTER TABLE socios ADD COLUMN password_hash VARCHAR(255)"))
             else:
                 conn.execute(text("ALTER TABLE socios ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255)"))
+
+    columnas = {c["name"] for c in inspector.get_columns("socios")}
+    if "rol" not in columnas:
+        with engine.begin() as conn:
+            if is_sqlite(engine):
+                conn.execute(text("ALTER TABLE socios ADD COLUMN rol VARCHAR(10) NOT NULL DEFAULT 'socio'"))
+            else:
+                conn.execute(text("ALTER TABLE socios ADD COLUMN IF NOT EXISTS rol VARCHAR(10) NOT NULL DEFAULT 'socio'"))

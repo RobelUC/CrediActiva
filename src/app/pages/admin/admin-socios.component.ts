@@ -14,6 +14,7 @@ const SOCIO_VACIO: SocioCreate = {
   email: '',
   telefono: '',
   aporte_mensual: 50,
+  password: '',
 };
 
 @Component({
@@ -84,6 +85,7 @@ export class AdminSociosComponent implements OnInit {
       email: socio.email,
       telefono: socio.telefono,
       aporte_mensual: socio.aporte_mensual,
+      password: '',
     });
     this.limpiarMensaje();
   }
@@ -155,8 +157,12 @@ export class AdminSociosComponent implements OnInit {
     });
   }
 
-  desactivarSocio(socio: Socio): void {
-    if (!confirm(`¿Desactivar al socio ${socio.nombres} ${socio.apellidos}?`)) {
+  eliminarSocio(socio: Socio): void {
+    if (
+      !confirm(
+        `¿Eliminar al socio ${socio.nombres} ${socio.apellidos}?\n\nEl socio quedará inactivo y no podrá iniciar sesión.`,
+      )
+    ) {
       return;
     }
 
@@ -164,7 +170,7 @@ export class AdminSociosComponent implements OnInit {
     this.admin.eliminarSocio(socio.id_socio).subscribe({
       next: () => {
         this.cargando.set(false);
-        this.notificar('Socio desactivado correctamente.', false);
+        this.notificar('Socio eliminado correctamente.', false);
         if (this.socioEditando()?.id_socio === socio.id_socio) {
           this.cancelarEdicion();
         }
@@ -172,7 +178,7 @@ export class AdminSociosComponent implements OnInit {
       },
       error: (err) => {
         this.cargando.set(false);
-        this.notificar(this.extraerError(err, 'Error al desactivar socio.'), true);
+        this.notificar(this.extraerError(err, 'Error al eliminar socio.'), true);
       },
     });
   }
@@ -201,6 +207,32 @@ export class AdminSociosComponent implements OnInit {
     });
   }
 
+  borrarSocioDefinitivo(socio: Socio): void {
+    if (
+      !confirm(
+        `¿Borrar DEFINITIVAMENTE a ${socio.nombres} ${socio.apellidos} (DNI ${socio.dni})?\n\nSe eliminarán también sus solicitudes y aportaciones. Esta acción no se puede deshacer.`,
+      )
+    ) {
+      return;
+    }
+
+    this.cargando.set(true);
+    this.admin.eliminarSocioPermanente(socio.id_socio).subscribe({
+      next: (resp) => {
+        this.cargando.set(false);
+        this.notificar(resp.mensaje || 'Socio eliminado definitivamente.', false);
+        if (this.socioEditando()?.id_socio === socio.id_socio) {
+          this.cancelarEdicion();
+        }
+        this.cargarSocios();
+      },
+      error: (err) => {
+        this.cargando.set(false);
+        this.notificar(this.extraerError(err, 'Error al borrar socio definitivamente.'), true);
+      },
+    });
+  }
+
   private validarFormulario(datos: SocioCreate): boolean {
     if (datos.nombres.trim().length < 2 || datos.apellidos.trim().length < 2) {
       this.notificar('Nombres y apellidos son obligatorios.', true);
@@ -220,6 +252,10 @@ export class AdminSociosComponent implements OnInit {
     }
     if (datos.aporte_mensual < 0) {
       this.notificar('El aporte mensual no puede ser negativo.', true);
+      return false;
+    }
+    if (!this.modoEdicion() && datos.password.length < 6) {
+      this.notificar('La contraseña debe tener al menos 6 caracteres.', true);
       return false;
     }
     return true;

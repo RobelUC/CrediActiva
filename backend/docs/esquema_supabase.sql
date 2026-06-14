@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS socios (
     fecha_registro  TIMESTAMPTZ  NOT NULL,
     activo          BOOLEAN      NOT NULL DEFAULT TRUE,
     password_hash   VARCHAR(255),
+    rol             VARCHAR(10)  NOT NULL DEFAULT 'socio',
     CONSTRAINT uq_socios_dni   UNIQUE (dni),
     CONSTRAINT uq_socios_email UNIQUE (email)
 );

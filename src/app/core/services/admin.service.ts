@@ -103,6 +103,18 @@ export class AdminService {
     return this.http.delete<Socio>(`${API}/socios/${idSocio}`);
   }
 
+  eliminarSocioPermanente(idSocio: string): Observable<{ mensaje: string }> {
+    if (environment.modoSoloFrontend) {
+      const idx = this.sociosDemo.findIndex((s) => s.id_socio === idSocio);
+      if (idx < 0) {
+        return throwError(() => ({ error: { detail: 'Socio no encontrado.' } }));
+      }
+      this.sociosDemo = this.sociosDemo.filter((s) => s.id_socio !== idSocio);
+      return of({ mensaje: 'Socio eliminado definitivamente.' }).pipe(delay(400));
+    }
+    return this.http.delete<{ mensaje: string }>(`${API}/socios/${idSocio}/permanente`);
+  }
+
   listarSolicitudes(): Observable<SolicitudAdmin[]> {
     if (environment.modoSoloFrontend) {
       return of([...MOCK_SOLICITUDES]).pipe(delay(300));

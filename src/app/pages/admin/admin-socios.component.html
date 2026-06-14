@@ -80,6 +80,21 @@
                 (input)="actualizarCampo('aporte_mensual', +$any($event.target).value)"
               />
             </div>
+            @if (!modoEdicion()) {
+              <div class="col-md-6">
+                <label class="form-label">Contraseña de acceso</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  minlength="6"
+                  autocomplete="new-password"
+                  placeholder="Mínimo 6 caracteres"
+                  [value]="formulario().password"
+                  (input)="actualizarCampo('password', $any($event.target).value)"
+                />
+                <small class="text-muted">El socio podrá iniciar sesión con su DNI y esta contraseña.</small>
+              </div>
+            }
             @if (modoEdicion() && socioEditando(); as editando) {
               <div class="col-md-6">
                 <label class="form-label">Estado</label>
@@ -117,6 +132,25 @@
               >
                 Cancelar edición
               </button>
+              @if (socioEditando()?.activo) {
+                <button
+                  type="button"
+                  class="btn btn-danger"
+                  [disabled]="cargando()"
+                  (click)="eliminarSocio(socioEditando()!)"
+                >
+                  Eliminar socio
+                </button>
+              } @else if (socioEditando(); as editandoInactivo) {
+                <button
+                  type="button"
+                  class="btn btn-danger"
+                  [disabled]="cargando()"
+                  (click)="borrarSocioDefinitivo(editandoInactivo)"
+                >
+                  Borrar definitivamente
+                </button>
+              }
             }
           </div>
         </div>
@@ -180,11 +214,11 @@
                         <button
                           type="button"
                           class="btn btn-outline-danger"
-                          title="Desactivar"
+                          title="Eliminar socio"
                           [disabled]="cargando()"
-                          (click)="desactivarSocio(s)"
+                          (click)="eliminarSocio(s)"
                         >
-                          Desactivar
+                          Eliminar
                         </button>
                       } @else {
                         <button
@@ -195,6 +229,15 @@
                           (click)="reactivarSocio(s)"
                         >
                           Reactivar
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-danger"
+                          title="Borrar definitivamente"
+                          [disabled]="cargando()"
+                          (click)="borrarSocioDefinitivo(s)"
+                        >
+                          Borrar definitivo
                         </button>
                       }
                     </div>

@@ -13,7 +13,7 @@ from app.calculadora import (
 )
 from app.cronograma import generar_cronograma
 from app.database import init_db
-from app.repository import actualizar_solicitud, guardar_solicitud, listar_solicitudes, obtener_solicitud
+from app.repository import actualizar_solicitud, eliminar_por_dni, guardar_solicitud, listar_solicitudes, obtener_solicitud
 from app.schemas import (
     EvaluarSolicitudRequest,
     SolicitudAdminResponse,
@@ -119,6 +119,11 @@ def evaluar_solicitud(id_solicitud: str, payload: EvaluarSolicitudRequest) -> So
 @app.get("/internal/solicitudes")
 def solicitudes_internas(dni: str | None = None) -> list[dict]:
     return listar_solicitudes(dni)
+
+
+@app.delete("/internal/datos-socio/{dni}")
+def eliminar_datos_socio(dni: str) -> dict[str, int]:
+    return {"solicitudes_eliminadas": eliminar_por_dni(dni)}
 
 
 def _crear_aportaciones(solicitud: dict) -> None:
