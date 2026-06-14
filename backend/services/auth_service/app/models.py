@@ -29,3 +29,4 @@ class Socio(Base):
     fecha_registro: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     activo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    rol: Mapped[str] = mapped_column(String(10), default="socio", nullable=False)

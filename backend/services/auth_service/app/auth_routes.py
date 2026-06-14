@@ -112,6 +112,10 @@ def login(payload: LoginAuth) -> AuthResponse:
 
     return AuthResponse(
         exito=True,
-        mensaje="Bienvenido a CrediActiva.",
-        usuario=_usuario_desde_socio(socio),
+        mensaje=(
+            "Bienvenido al panel de administración."
+            if socio.get("rol") == "admin"
+            else "Bienvenido a CrediActiva."
+        ),
+        usuario=_usuario_desde_socio(socio, rol=socio.get("rol", "socio")),
     )

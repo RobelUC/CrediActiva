@@ -16,12 +16,15 @@ class SocioCreate(BaseModel):
     email: str = Field(..., min_length=5)
     telefono: str = Field(..., min_length=9, max_length=9)
     aporte_mensual: float = Field(default=50.0, ge=0)
+    password: str = Field(..., min_length=6, max_length=128)
 
     @field_validator("dni")
     @classmethod
     def validar_dni(cls, valor: str) -> str:
         if not _DNI.match(valor):
             raise ValueError("DNI debe tener 8 dígitos.")
+        if valor == "00000000":
+            raise ValueError("Este DNI está reservado para el sistema.")
         return valor
 
 

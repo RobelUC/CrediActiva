@@ -135,3 +135,13 @@ def resumen_aportaciones() -> dict[str, Any]:
         "monto_pendiente": round(sum(a["monto_cuota"] for a in pendientes + vencidas), 2),
         "actualizado_en": datetime.now(timezone.utc),
     }
+
+
+def eliminar_por_dni(dni: str) -> int:
+    with SessionLocal() as db:
+        items = db.query(Aportacion).filter(Aportacion.dni_socio == dni).all()
+        cantidad = len(items)
+        for item in items:
+            db.delete(item)
+        db.commit()
+        return cantidad

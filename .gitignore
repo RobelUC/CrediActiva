@@ -3,6 +3,8 @@ dist/
 .angular/
 *.log
 .DS_Store
+__pycache__/
+*.pyc
 backend/.venv/
 backend/.env
 backend/*.db

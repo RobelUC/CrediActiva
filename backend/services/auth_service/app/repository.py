@@ -22,6 +22,7 @@ def _to_dict(socio: Socio, *, incluir_hash: bool = False) -> dict[str, Any]:
         "aporte_mensual": socio.aporte_mensual,
         "fecha_registro": socio.fecha_registro,
         "activo": socio.activo,
+        "rol": socio.rol or "socio",
     }
     if incluir_hash:
         data["password_hash"] = socio.password_hash
@@ -41,6 +42,8 @@ def guardar_socio(registro: dict[str, Any]) -> dict[str, Any]:
             socio.telefono = registro.get("telefono", socio.telefono)
             socio.aporte_mensual = round(registro.get("aporte_mensual", socio.aporte_mensual), 2)
             socio.activo = registro.get("activo", socio.activo)
+            if "rol" in registro and registro["rol"]:
+                socio.rol = registro["rol"]
             if "password_hash" in registro and registro["password_hash"]:
                 socio.password_hash = registro["password_hash"]
         else:
@@ -55,6 +58,7 @@ def guardar_socio(registro: dict[str, Any]) -> dict[str, Any]:
                 fecha_registro=fecha,
                 activo=registro.get("activo", True),
                 password_hash=registro.get("password_hash"),
+                rol=registro.get("rol", "socio"),
             )
             db.add(socio)
 
@@ -128,3 +132,25 @@ def eliminar_socio(id_socio: str) -> dict[str, Any] | None:
         db.commit()
         db.refresh(socio)
         return _to_dict(socio)
+
+
+def asignar_rol_por_dni(dni: str, rol: str) -> dict[str, Any] | None:
+    with SessionLocal() as db:
+        socio = db.query(Socio).filter(Socio.dni == dni).first()
+        if not socio:
+            return None
+        socio.rol = rol
+        db.commit()
+        db.refresh(socio)
+        return _to_dict(socio)
+
+
+def borrar_socio_permanente(id_socio: str) -> dict[str, Any] | None:
+    with SessionLocal() as db:
+        socio = db.query(Socio).filter(Socio.id_socio == id_socio).first()
+        if not socio:
+            return None
+        data = _to_dict(socio)
+        db.delete(socio)
+        db.commit()
+        return data
