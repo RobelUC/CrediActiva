@@ -44,6 +44,10 @@ class SocioUpdate(BaseModel):
         return valor
 
 
+class SocioPasswordUpdate(BaseModel):
+    password: str = Field(..., min_length=6, max_length=128)
+
+
 class SocioResponse(BaseModel):
     id_socio: str
     nombres: str

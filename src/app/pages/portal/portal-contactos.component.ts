@@ -35,31 +35,35 @@ export class PortalContactosComponent {
   readonly empresa = {
     nombre: 'CrediActiva Cooperativa de Ahorro y Crédito',
     ruc: '20123456789',
-    slogan: 'Finanzas solidarias para emprender, crecer y vivir mejor.',
+    ciudad: 'Huancayo, Junín',
+    slogan: 'Finanzas solidarias para emprender, crecer y vivir mejor en la sierra central.',
     mision:
-      'Brindamos soluciones financieras accesibles y transparentes a nuestros socios, con acompañamiento cercano y compromiso con el desarrollo de las familias peruanas.',
+      'Democratizamos el acceso al crédito responsable en Huancayo y la región Junín, con tasas transparentes y acompañamiento humano en cada solicitud.',
+    direccionMapa: 'Av. Huancavelica 450, Huancayo',
+    telefonoUrgente: '(064) 381-200',
+    telefonoUrgenteEnlace: 'tel:+5164381200',
   };
 
   readonly canalesPrincipales: readonly CanalContacto[] = [
     {
       icono: 'bi-telephone-fill',
       titulo: 'Central telefónica',
-      detalle: '(01) 612-4500',
-      enlace: 'tel:+516124500',
+      detalle: '(064) 381-200',
+      enlace: 'tel:+5164381200',
       tipoEnlace: 'tel',
     },
     {
       icono: 'bi-whatsapp',
       titulo: 'WhatsApp Socios',
-      detalle: '+51 987 654 321',
-      enlace: 'https://wa.me/51987654321',
+      detalle: '+51 964 381 200',
+      enlace: 'https://wa.me/51964381200',
       tipoEnlace: 'url',
     },
     {
       icono: 'bi-envelope-fill',
       titulo: 'Correo general',
-      detalle: 'atencion@crediactiva.pe',
-      enlace: 'mailto:atencion@crediactiva.pe',
+      detalle: 'contacto@crediactiva.pe',
+      enlace: 'mailto:contacto@crediactiva.pe',
       tipoEnlace: 'mailto',
     },
     {
@@ -73,16 +77,16 @@ export class PortalContactosComponent {
 
   readonly oficinas: readonly Oficina[] = [
     {
-      nombre: 'Oficina principal — Lima',
-      direccion: 'Av. Javier Prado Este 4200, San Borja',
-      referencia: 'A dos cuadras del Óvalo Monitor',
+      nombre: 'Oficina principal — Huancayo',
+      direccion: 'Av. Huancavelica 450, Huancayo',
+      referencia: 'A tres cuadras de la Plaza de la Constitución',
       horario: 'Lun–Vie 9:00 a.m. – 6:00 p.m. · Sáb 9:00 a.m. – 1:00 p.m.',
     },
     {
-      nombre: 'Agencia Norte — Los Olivos',
-      direccion: 'Av. Alfredo Mendiola 3520, Urb. El Pacífico',
-      referencia: 'Frente al centro comercial Plaza Norte',
-      horario: 'Lun–Vie 9:00 a.m. – 5:30 p.m.',
+      nombre: 'Agencia El Tambo',
+      direccion: 'Jr. Lima 218, El Tambo',
+      referencia: 'Frente al mercado central de El Tambo',
+      horario: 'Lun–Vie 9:00 a.m. – 5:30 p.m. · Sáb 9:00 a.m. – 12:30 p.m.',
     },
   ];
 
@@ -90,15 +94,15 @@ export class PortalContactosComponent {
     {
       icono: 'bi-people-fill',
       area: 'Atención al socio',
-      responsable: 'Lic. María Fernández',
+      responsable: 'Lic. Rosa Quispe',
       correo: 'socios@crediactiva.pe',
       telefono: 'Anexo 101',
-      descripcion: 'Consultas sobre membresía, aportes y actualización de datos.',
+      descripcion: 'Consultas sobre membresía, aportes y actualización de datos en sede Huancayo.',
     },
     {
       icono: 'bi-cash-coin',
       area: 'Créditos y evaluación',
-      responsable: 'Econ. Carlos Ruiz',
+      responsable: 'Econ. Miguel Rojas',
       correo: 'creditos@crediactiva.pe',
       telefono: 'Anexo 205',
       descripcion: 'Estado de solicitudes, documentación y cronogramas de pago.',
@@ -106,7 +110,7 @@ export class PortalContactosComponent {
     {
       icono: 'bi-shield-check',
       area: 'Cobranzas y regularización',
-      responsable: 'Lic. Ana Torres',
+      responsable: 'Lic. Patricia Vargas',
       correo: 'cobranzas@crediactiva.pe',
       telefono: 'Anexo 308',
       descripcion: 'Acuerdos de pago, refinanciamiento y orientación financiera.',
@@ -114,8 +118,8 @@ export class PortalContactosComponent {
   ];
 
   readonly redes = [
-    { icono: 'bi-facebook', nombre: 'Facebook', usuario: '@CrediActivaPE' },
-    { icono: 'bi-instagram', nombre: 'Instagram', usuario: '@crediactiva' },
+    { icono: 'bi-facebook', nombre: 'Facebook', usuario: '@CrediActivaHuancayo' },
+    { icono: 'bi-instagram', nombre: 'Instagram', usuario: '@crediactiva_junin' },
     { icono: 'bi-linkedin', nombre: 'LinkedIn', usuario: 'CrediActiva Cooperativa' },
   ];
 

@@ -107,6 +107,66 @@
                   <option value="inactivo">Inactivo</option>
                 </select>
               </div>
+              <div class="col-12">
+                <div class="admin-cambio-password border rounded p-3 bg-light">
+                  <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                    <div>
+                      <strong class="d-block">Contraseña de acceso</strong>
+                      <small class="text-muted">El socio inicia sesión con su DNI y esta contraseña.</small>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary"
+                      [disabled]="cargando()"
+                      (click)="toggleCambioPassword()"
+                    >
+                      @if (mostrarCambioPassword()) {
+                        Cancelar
+                      } @else {
+                        Cambiar contraseña
+                      }
+                    </button>
+                  </div>
+                  @if (mostrarCambioPassword()) {
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label">Nueva contraseña</label>
+                        <input
+                          type="password"
+                          class="form-control"
+                          minlength="6"
+                          autocomplete="new-password"
+                          placeholder="Mínimo 6 caracteres"
+                          [value]="nuevaPassword()"
+                          (input)="actualizarNuevaPassword($any($event.target).value)"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Confirmar contraseña</label>
+                        <input
+                          type="password"
+                          class="form-control"
+                          minlength="6"
+                          autocomplete="new-password"
+                          placeholder="Repita la contraseña"
+                          [value]="confirmarPassword()"
+                          (input)="actualizarConfirmarPassword($any($event.target).value)"
+                        />
+                      </div>
+                      <div class="col-12">
+                        <button
+                          type="button"
+                          class="btn btn-warning"
+                          [disabled]="cargando()"
+                          (click)="cambiarPasswordSocio()"
+                        >
+                          Actualizar contraseña
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
             }
           </div>
 
@@ -212,10 +272,20 @@
                       </button>
                       <button
                         type="button"
+                        class="btn btn-outline-warning"
+                        title="Cambiar contraseña"
+                        [disabled]="cargando()"
+                        (click)="abrirCambioPassword(s)"
+                      >
+                        Clave
+                      </button>
+                      <button
+                        type="button"
                         class="btn btn-outline-primary"
                         title="Editar"
                         [disabled]="cargando()"
                         (click)="iniciarEdicion(s)"
+                      >
                       >
                         Editar
                       </button>

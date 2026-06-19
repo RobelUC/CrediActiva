@@ -37,6 +37,9 @@ export class AdminSociosComponent implements OnInit {
   readonly filtroEstado = signal<FiltroEstado>('todos');
   readonly socioEditando = signal<Socio | null>(null);
   readonly formulario = signal<SocioCreate>({ ...SOCIO_VACIO });
+  readonly nuevaPassword = signal('');
+  readonly confirmarPassword = signal('');
+  readonly mostrarCambioPassword = signal(false);
 
   readonly modoEdicion = computed(() => this.socioEditando() !== null);
 
@@ -89,13 +92,74 @@ export class AdminSociosComponent implements OnInit {
       aporte_mensual: socio.aporte_mensual,
       password: '',
     });
+    this.nuevaPassword.set('');
+    this.confirmarPassword.set('');
+    this.mostrarCambioPassword.set(false);
     this.limpiarMensaje();
   }
 
   cancelarEdicion(): void {
     this.socioEditando.set(null);
     this.formulario.set({ ...SOCIO_VACIO });
+    this.nuevaPassword.set('');
+    this.confirmarPassword.set('');
+    this.mostrarCambioPassword.set(false);
     this.limpiarMensaje();
+  }
+
+  abrirCambioPassword(socio: Socio): void {
+    this.iniciarEdicion(socio);
+    this.mostrarCambioPassword.set(true);
+  }
+
+  toggleCambioPassword(): void {
+    this.mostrarCambioPassword.update((v) => !v);
+    this.nuevaPassword.set('');
+    this.confirmarPassword.set('');
+    this.limpiarMensaje();
+  }
+
+  actualizarNuevaPassword(valor: string): void {
+    this.nuevaPassword.set(valor);
+    this.limpiarMensaje();
+  }
+
+  actualizarConfirmarPassword(valor: string): void {
+    this.confirmarPassword.set(valor);
+    this.limpiarMensaje();
+  }
+
+  cambiarPasswordSocio(): void {
+    const editando = this.socioEditando();
+    if (!editando) {
+      return;
+    }
+
+    const password = this.nuevaPassword();
+    const confirmacion = this.confirmarPassword();
+    if (password.length < 6) {
+      this.notificar('La contraseña debe tener al menos 6 caracteres.', true);
+      return;
+    }
+    if (password !== confirmacion) {
+      this.notificar('Las contraseñas no coinciden.', true);
+      return;
+    }
+
+    this.cargando.set(true);
+    this.admin.cambiarPasswordSocio(editando.id_socio, { password }).subscribe({
+      next: () => {
+        this.cargando.set(false);
+        this.nuevaPassword.set('');
+        this.confirmarPassword.set('');
+        this.mostrarCambioPassword.set(false);
+        this.notificar('Contraseña actualizada correctamente.', false);
+      },
+      error: (err) => {
+        this.cargando.set(false);
+        this.notificar(this.extraerError(err, 'No se pudo cambiar la contraseña.'), true);
+      },
+    });
   }
 
   guardarSocio(): void {

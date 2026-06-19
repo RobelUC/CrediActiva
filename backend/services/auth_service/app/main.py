@@ -12,6 +12,7 @@ from app.database import init_db
 from app.demo_data import sembrar_cuentas_demo
 from app.roles_env import aplicar_roles_desde_env
 from app.repository import (
+    actualizar_password_socio,
     actualizar_socio,
     borrar_socio_permanente,
     eliminar_socio,
@@ -21,7 +22,7 @@ from app.repository import (
     obtener_por_email,
     obtener_por_id,
 )
-from app.schemas import PerfilSocioUpdate, SocioCreate, SocioResponse, SocioUpdate
+from app.schemas import PerfilSocioUpdate, SocioCreate, SocioPasswordUpdate, SocioResponse, SocioUpdate
 from app.security import hash_password
 
 CREDIT_SERVICE_URL = os.getenv("CREDIT_SERVICE_URL", "http://localhost:8002")
@@ -103,6 +104,23 @@ def editar_socio(id_socio: str, payload: SocioUpdate) -> SocioResponse:
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
+    if not actualizado:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+    return SocioResponse(**actualizado)
+
+
+@app.patch("/api/v1/admin/socios/{id_socio}/password", response_model=SocioResponse)
+def cambiar_password_socio(id_socio: str, payload: SocioPasswordUpdate) -> SocioResponse:
+    socio = obtener_por_id(id_socio)
+    if not socio:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+    if socio.get("rol") == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="La contraseña del administrador se gestiona por configuración del sistema.",
+        )
+
+    actualizado = actualizar_password_socio(id_socio, hash_password(payload.password))
     if not actualizado:
         raise HTTPException(status_code=404, detail="Socio no encontrado.")
     return SocioResponse(**actualizado)
