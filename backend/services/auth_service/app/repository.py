@@ -132,6 +132,9 @@ def actualizar_password_socio(id_socio: str, password_hash: str) -> dict[str, An
         db.commit()
         db.refresh(socio)
         return _to_dict(socio)
+
+
+def eliminar_socio(id_socio: str) -> dict[str, Any] | None:
     with SessionLocal() as db:
         socio = db.query(Socio).filter(Socio.id_socio == id_socio).first()
         if not socio:
