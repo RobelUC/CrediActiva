@@ -86,9 +86,6 @@ export interface PerfilSocio {
 }
 
 export interface PerfilSocioUpdate {
-  nombres: string;
-  apellidos: string;
   email: string;
   telefono: string;
-  aporte_mensual: number;
 }

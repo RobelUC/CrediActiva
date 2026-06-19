@@ -46,11 +46,40 @@
 
     <div class="card admin-card shadow-sm">
       <div class="card-header admin-card__header">Auditoría de solicitudes y cálculos TEA</div>
-      <div class="table-responsive">
-        <table class="table table-sm table-hover mb-0">
+
+      <div class="admin-mobile-cards">
+        @for (s of r.solicitudes; track s.id_solicitud) {
+          <article class="admin-mobile-card">
+            <div class="admin-mobile-card__head">
+              <strong>DNI {{ s.dni_usuario }}</strong>
+              <span class="badge bg-{{ badgeEval(s.estado_evaluacion) }}">{{ s.estado_evaluacion }}</span>
+            </div>
+            <p class="admin-mobile-card__subtitle mb-2">{{ s.tipo_credito }} · {{ s.monto | soles : '1.0-0' }}</p>
+            <dl class="admin-mobile-card__meta mb-0">
+              <div>
+                <dt>TEA</dt>
+                <dd>{{ s.tea_aplicada ?? '—' }}%</dd>
+              </div>
+              <div>
+                <dt>Cuota</dt>
+                <dd>{{ s.cuota_mensual ? (s.cuota_mensual | number : '1.2-2') : '—' }}</dd>
+              </div>
+              <div>
+                <dt>Interés total</dt>
+                <dd>{{ s.interes_total ? (s.interes_total | number : '1.2-2') : '—' }}</dd>
+              </div>
+            </dl>
+          </article>
+        } @empty {
+          <p class="text-center text-muted py-4 mb-0">Sin solicitudes en el reporte.</p>
+        }
+      </div>
+
+      <div class="table-responsive admin-table-desktop">
+        <table class="table table-sm table-hover mb-0 admin-data-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th class="d-none d-xl-table-cell">ID</th>
               <th>DNI</th>
               <th>Producto</th>
               <th>Monto</th>
@@ -63,14 +92,16 @@
           <tbody>
             @for (s of r.solicitudes; track s.id_solicitud) {
               <tr>
-                <td class="text-break"><small>{{ s.id_solicitud.slice(0, 8) }}…</small></td>
-                <td>{{ s.dni_usuario }}</td>
+                <td class="d-none d-xl-table-cell text-muted"><small>{{ s.id_solicitud.slice(0, 8) }}…</small></td>
+                <td class="text-nowrap">{{ s.dni_usuario }}</td>
                 <td>{{ s.tipo_credito }}</td>
-                <td>{{ s.monto | soles : '1.0-0' }}</td>
-                <td><span class="badge bg-{{ badgeEval(s.estado_evaluacion) }}">{{ s.estado_evaluacion }}</span></td>
-                <td>{{ s.tea_aplicada ?? '—' }}</td>
-                <td>{{ s.cuota_mensual ? (s.cuota_mensual | number : '1.2-2') : '—' }}</td>
-                <td>{{ s.interes_total ? (s.interes_total | number : '1.2-2') : '—' }}</td>
+                <td class="text-nowrap">{{ s.monto | soles : '1.0-0' }}</td>
+                <td class="text-nowrap">
+                  <span class="badge bg-{{ badgeEval(s.estado_evaluacion) }}">{{ s.estado_evaluacion }}</span>
+                </td>
+                <td class="text-nowrap">{{ s.tea_aplicada ?? '—' }}</td>
+                <td class="text-nowrap">{{ s.cuota_mensual ? (s.cuota_mensual | number : '1.2-2') : '—' }}</td>
+                <td class="text-nowrap">{{ s.interes_total ? (s.interes_total | number : '1.2-2') : '—' }}</td>
               </tr>
             }
           </tbody>

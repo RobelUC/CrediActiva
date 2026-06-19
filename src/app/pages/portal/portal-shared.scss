@@ -279,6 +279,24 @@
   }
 }
 
+.portal-perfil__datos {
+  dt {
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  dd {
+    color: #0f172a;
+    font-weight: 600;
+    margin-bottom: 0.65rem;
+  }
+}
+
+.portal-perfil__zona-peligro {
+  border: 1px solid #fecaca;
+  background: linear-gradient(180deg, #fff5f5 0%, #fff 100%);
+}
+
 .portal-contactos__hero {
   background: linear-gradient(135deg, #002855 0%, #004080 45%, #00703c 100%);
   color: #fff;

@@ -18,6 +18,7 @@ import { PortalCreditosComponent } from './pages/portal/portal-creditos.componen
 import { PortalAportesComponent } from './pages/portal/portal-aportes.component';
 import { PortalPerfilComponent } from './pages/portal/portal-perfil.component';
 import { PortalContactosComponent } from './pages/portal/portal-contactos.component';
+import { SoporteTecnicoComponent } from './pages/soporte/soporte-tecnico.component';
 import { socioGuard } from './core/guards/socio.guard';
 import { simuladorGuard } from './core/guards/simulador.guard';
 
@@ -47,6 +48,7 @@ export const routes: Routes = [
       { path: 'creditos', component: PortalCreditosComponent },
       { path: 'aportes', component: PortalAportesComponent },
       { path: 'contactos', component: PortalContactosComponent },
+      { path: 'soporte', component: SoporteTecnicoComponent, data: { audiencia: 'socio' } },
       { path: 'perfil', component: PortalPerfilComponent },
     ],
   },
@@ -61,6 +63,7 @@ export const routes: Routes = [
       { path: 'prestamos', component: AdminPrestamosComponent },
       { path: 'aportaciones', component: AdminAportacionesComponent },
       { path: 'reportes', component: AdminReportesComponent },
+      { path: 'soporte', component: SoporteTecnicoComponent, data: { audiencia: 'admin' } },
     ],
   },
   { path: '**', redirectTo: '' },

@@ -1,7 +1,7 @@
 <div class="portal-page container-fluid py-4">
   <header class="portal-page__header mb-4">
     <h1 class="h3 mb-1">Perfil de usuario</h1>
-    <p class="text-muted mb-0">Actualice sus datos de contacto y aporte cooperativo</p>
+    <p class="text-muted mb-0">Consulte sus datos y actualice su correo y celular</p>
   </header>
 
   @if (perfil(); as p) {
@@ -19,42 +19,47 @@
             }
           </div>
         </div>
+
+        <div class="card portal-card shadow-sm mt-4">
+          <div class="card-header portal-card__header">Datos del socio</div>
+          <div class="card-body">
+            <dl class="row small mb-0 portal-perfil__datos">
+              <dt class="col-5">Nombres</dt>
+              <dd class="col-7">{{ p.nombres }}</dd>
+              <dt class="col-5">Apellidos</dt>
+              <dd class="col-7">{{ p.apellidos }}</dd>
+              <dt class="col-5">DNI</dt>
+              <dd class="col-7">{{ p.dni }}</dd>
+              <dt class="col-5">Aporte mensual</dt>
+              <dd class="col-7">{{ p.aporte_mensual | soles : '1.2-2' }}</dd>
+            </dl>
+            <p class="small text-muted mb-0 mt-3">
+              Para modificar nombres, apellidos o aporte, acérquese a una oficina de CrediActiva.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div class="col-lg-7">
         <div class="card portal-card shadow-sm">
-          <div class="card-header portal-card__header">Editar información</div>
+          <div class="card-header portal-card__header">Datos de contacto</div>
           <div class="card-body">
             <form (submit)="$event.preventDefault(); guardar()" novalidate>
               <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">Nombres</label>
-                  <input
-                    class="form-control"
-                    [value]="editando().nombres"
-                    (input)="actualizarCampo('nombres', $any($event.target).value)"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Apellidos</label>
-                  <input
-                    class="form-control"
-                    [value]="editando().apellidos"
-                    (input)="actualizarCampo('apellidos', $any($event.target).value)"
-                  />
-                </div>
                 <div class="col-12">
-                  <label class="form-label">Correo electrónico</label>
+                  <label class="form-label" for="perfil-email">Correo electrónico</label>
                   <input
+                    id="perfil-email"
                     type="email"
                     class="form-control"
                     [value]="editando().email"
                     (input)="actualizarCampo('email', $any($event.target).value)"
                   />
                 </div>
-                <div class="col-md-6">
-                  <label class="form-label">Celular</label>
+                <div class="col-12">
+                  <label class="form-label" for="perfil-telefono">Celular</label>
                   <input
+                    id="perfil-telefono"
                     class="form-control"
                     caSoloNumeros
                     maxlength="9"
@@ -66,15 +71,6 @@
                   @if (telefonoInvalido()) {
                     <div class="invalid-feedback">9 dígitos requeridos</div>
                   }
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Aporte mensual (S/.)</label>
-                  <input
-                    type="number"
-                    class="form-control"
-                    [value]="editando().aporte_mensual"
-                    (input)="actualizarCampo('aporte_mensual', +$any($event.target).value)"
-                  />
                 </div>
               </div>
 
@@ -100,6 +96,29 @@
                 }
               </button>
             </form>
+          </div>
+        </div>
+
+        <div class="card portal-card shadow-sm mt-4 portal-perfil__zona-peligro">
+          <div class="card-body">
+            <h2 class="h6 text-danger mb-2">Eliminar cuenta</h2>
+            <p class="small text-muted mb-3">
+              Si ya no desea ser socio en el portal digital, puede desactivar su cuenta.
+              No podrá iniciar sesión, pero sus registros en la cooperativa se conservarán.
+              Para reactivarla deberá comunicarse con atención al socio.
+            </p>
+            <button
+              type="button"
+              class="btn btn-outline-danger"
+              [disabled]="eliminando() || guardando()"
+              (click)="eliminarCuenta()"
+            >
+              @if (eliminando()) {
+                Eliminando cuenta…
+              } @else {
+                Eliminar mi cuenta
+              }
+            </button>
           </div>
         </div>
       </div>

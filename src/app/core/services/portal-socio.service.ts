@@ -121,10 +121,21 @@ export class PortalSocioService {
       const actualizado: PerfilSocio = {
         ...MOCK_PERFIL,
         dni,
-        ...datos,
+        email: datos.email,
+        telefono: datos.telefono,
       };
       return of(actualizado).pipe(delay(400));
     }
     return this.http.patch<PerfilSocio>(`${API}/${dni}/perfil`, datos);
+  }
+
+  eliminarCuenta(dni: string): Observable<{ mensaje: string; dni: string }> {
+    if (environment.modoSoloFrontend) {
+      return of({
+        mensaje: 'Su cuenta ha sido desactivada. Ya no podrá iniciar sesión.',
+        dni,
+      }).pipe(delay(400));
+    }
+    return this.http.delete<{ mensaje: string; dni: string }>(`${API}/${dni}/cuenta`);
   }
 }

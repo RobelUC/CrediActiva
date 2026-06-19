@@ -40,7 +40,9 @@ def _resolver_servicio(path: str, method: str) -> str | None:
         return PAYMENT_SERVICE_URL
     if path.startswith("/api/v1/admin/dashboard") or path.startswith("/api/v1/admin/reportes"):
         return PORTAL_SERVICE_URL
-    if path.startswith("/api/v1/portal/") and path.endswith("/perfil"):
+    if path.startswith("/api/v1/portal/") and (
+        path.endswith("/perfil") or path.endswith("/cuenta")
+    ):
         return AUTH_SERVICE_URL
     if path.startswith("/api/v1/portal/"):
         return PORTAL_SERVICE_URL

@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { SolesPipe } from '../../core/pipes/soles.pipe';
 import { SoloNumerosDirective } from '../../core/directives/solo-numeros.directive';
 import {
   ChangeDetectionStrategy,
@@ -9,6 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import type { PerfilSocio, PerfilSocioUpdate } from '../../core/models/portal.models';
 import { AuthService } from '../../core/services/auth.service';
 import { PortalSocioService } from '../../core/services/portal-socio.service';
@@ -16,7 +18,7 @@ import { PortalSocioService } from '../../core/services/portal-socio.service';
 @Component({
   selector: 'ca-portal-perfil',
   standalone: true,
-  imports: [FormsModule, DatePipe, SoloNumerosDirective],
+  imports: [FormsModule, DatePipe, SolesPipe, SoloNumerosDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './portal-perfil.component.html',
   styleUrl: './portal-shared.scss',
@@ -24,16 +26,15 @@ import { PortalSocioService } from '../../core/services/portal-socio.service';
 export class PortalPerfilComponent implements OnInit {
   private readonly portal = inject(PortalSocioService);
   private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   readonly perfil = signal<PerfilSocio | null>(null);
   readonly editando = signal<PerfilSocioUpdate>({
-    nombres: '',
-    apellidos: '',
     email: '',
     telefono: '',
-    aporte_mensual: 50,
   });
   readonly guardando = signal(false);
+  readonly eliminando = signal(false);
   readonly mensaje = signal<string | null>(null);
   readonly esError = signal(false);
 
@@ -45,12 +46,7 @@ export class PortalPerfilComponent implements OnInit {
 
   readonly formularioValido = computed(() => {
     const e = this.editando();
-    return (
-      e.nombres.trim().length >= 2 &&
-      e.apellidos.trim().length >= 2 &&
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.email) &&
-      /^\d{9}$/.test(e.telefono)
-    );
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.email.trim()) && /^\d{9}$/.test(e.telefono);
   });
 
   ngOnInit(): void {
@@ -66,11 +62,8 @@ export class PortalPerfilComponent implements OnInit {
       next: (p) => {
         this.perfil.set(p);
         this.editando.set({
-          nombres: p.nombres,
-          apellidos: p.apellidos,
           email: p.email,
           telefono: p.telefono,
-          aporte_mensual: p.aporte_mensual,
         });
       },
     });
@@ -94,7 +87,7 @@ export class PortalPerfilComponent implements OnInit {
       next: (p) => {
         this.guardando.set(false);
         this.perfil.set(p);
-        this.mensaje.set('Perfil actualizado correctamente.');
+        this.mensaje.set('Datos de contacto actualizados correctamente.');
         this.esError.set(false);
         this.auth.actualizarDatosSesion({
           nombres: p.nombres,
@@ -102,9 +95,49 @@ export class PortalPerfilComponent implements OnInit {
           email: p.email,
         });
       },
-      error: () => {
+      error: (err) => {
         this.guardando.set(false);
-        this.mensaje.set('No se pudo guardar el perfil.');
+        const detalle = err?.error?.detail;
+        this.mensaje.set(
+          typeof detalle === 'string' ? detalle : 'No se pudo guardar el perfil.',
+        );
+        this.esError.set(true);
+      },
+    });
+  }
+
+  eliminarCuenta(): void {
+    const dni = this.auth.usuario()?.dni;
+    if (!dni || this.eliminando()) {
+      return;
+    }
+
+    const confirmado = confirm(
+      '¿Desea eliminar su cuenta de socio?\n\n' +
+        'Su acceso al portal se desactivará y no podrá iniciar sesión. ' +
+        'Si necesita reactivarla, deberá contactar a la cooperativa.\n\n' +
+        'Esta acción no se puede deshacer desde el portal.',
+    );
+    if (!confirmado) {
+      return;
+    }
+
+    this.eliminando.set(true);
+    this.mensaje.set(null);
+    this.portal.eliminarCuenta(dni).subscribe({
+      next: (resp) => {
+        this.eliminando.set(false);
+        this.auth.cerrarSesion();
+        void this.router.navigate(['/'], {
+          state: { mensajeCuentaEliminada: resp.mensaje },
+        });
+      },
+      error: (err) => {
+        this.eliminando.set(false);
+        const detalle = err?.error?.detail;
+        this.mensaje.set(
+          typeof detalle === 'string' ? detalle : 'No se pudo eliminar la cuenta.',
+        );
         this.esError.set(true);
       },
     });

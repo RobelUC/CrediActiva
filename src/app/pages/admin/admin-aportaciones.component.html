@@ -83,8 +83,48 @@
   </div>
 
   <div class="card admin-card shadow-sm">
-    <div class="table-responsive">
-      <table class="table table-hover mb-0">
+  @if (cargando()) {
+    <p class="text-center py-4 text-muted mb-0">Cargando aportaciones…</p>
+  } @else {
+    <div class="admin-mobile-cards">
+      @for (a of aportaciones(); track a.id_aportacion) {
+        <article class="admin-mobile-card">
+          <div class="admin-mobile-card__head">
+            <strong>{{ a.nombre_socio }}</strong>
+            <span class="badge bg-{{ badgeAport(a.estado) }}">{{ a.estado }}</span>
+          </div>
+          <p class="admin-mobile-card__subtitle mb-2">DNI {{ a.dni_socio }} · Cuota {{ a.numero_cuota }}</p>
+          <dl class="admin-mobile-card__meta mb-3">
+            <div>
+              <dt>Monto</dt>
+              <dd>{{ a.monto_cuota | soles : '1.2-2' }}</dd>
+            </div>
+            <div>
+              <dt>Vence</dt>
+              <dd>{{ a.fecha_vencimiento }}</dd>
+            </div>
+          </dl>
+          @if (a.estado !== 'PAGADO') {
+            <button type="button" class="btn btn-sm btn-success w-100" (click)="registrarPago(a)">
+              Registrar pago
+            </button>
+          } @else {
+            <small class="text-muted">Pagado el {{ a.fecha_pago }}</small>
+          }
+        </article>
+      } @empty {
+        <p class="text-center text-muted py-4 mb-0">
+          @if (dniFiltro()) {
+            Este socio no tiene aportaciones registradas.
+          } @else {
+            Ingrese un DNI y pulse Buscar para ver las aportaciones.
+          }
+        </p>
+      }
+    </div>
+
+    <div class="table-responsive admin-table-desktop">
+      <table class="table table-hover mb-0 admin-data-table">
         <thead>
           <tr>
             <th>Socio</th>
@@ -96,43 +136,38 @@
           </tr>
         </thead>
         <tbody>
-          @if (cargando()) {
+          @for (a of aportaciones(); track a.id_aportacion) {
             <tr>
-              <td colspan="6" class="text-center py-4 text-muted">Cargando aportaciones…</td>
+              <td><strong>{{ a.nombre_socio }}</strong><br /><small>{{ a.dni_socio }}</small></td>
+              <td class="text-nowrap">{{ a.numero_cuota }}</td>
+              <td class="text-nowrap">{{ a.monto_cuota | soles : '1.2-2' }}</td>
+              <td class="text-nowrap">{{ a.fecha_vencimiento }}</td>
+              <td class="text-nowrap"><span class="badge bg-{{ badgeAport(a.estado) }}">{{ a.estado }}</span></td>
+              <td class="text-nowrap">
+                @if (a.estado !== 'PAGADO') {
+                  <button type="button" class="btn btn-sm btn-success" (click)="registrarPago(a)">
+                    Registrar pago
+                  </button>
+                } @else {
+                  <small>{{ a.fecha_pago }}</small>
+                }
+              </td>
             </tr>
-          } @else {
-            @for (a of aportaciones(); track a.id_aportacion) {
-              <tr>
-                <td><strong>{{ a.nombre_socio }}</strong><br /><small>{{ a.dni_socio }}</small></td>
-                <td>{{ a.numero_cuota }}</td>
-                <td>{{ a.monto_cuota | soles : '1.2-2' }}</td>
-                <td>{{ a.fecha_vencimiento }}</td>
-                <td><span class="badge bg-{{ badgeAport(a.estado) }}">{{ a.estado }}</span></td>
-                <td>
-                  @if (a.estado !== 'PAGADO') {
-                    <button type="button" class="btn btn-sm btn-success" (click)="registrarPago(a)">
-                      Registrar pago
-                    </button>
-                  } @else {
-                    <small>{{ a.fecha_pago }}</small>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="6" class="text-center py-4 text-muted">
-                  @if (dniFiltro()) {
-                    Este socio no tiene aportaciones registradas.
-                  } @else {
-                    Ingrese un DNI y pulse Buscar para ver las aportaciones.
-                  }
-                </td>
-              </tr>
-            }
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">
+                @if (dniFiltro()) {
+                  Este socio no tiene aportaciones registradas.
+                } @else {
+                  Ingrese un DNI y pulse Buscar para ver las aportaciones.
+                }
+              </td>
+            </tr>
           }
         </tbody>
       </table>
     </div>
+  }
 
     @if (totalPaginas() > 1) {
       <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">

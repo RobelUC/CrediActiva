@@ -215,20 +215,67 @@ def perfil_socio(dni: str) -> dict:
     }
 
 
-@app.patch("/api/v1/portal/{dni}/perfil", response_model=SocioResponse)
-def actualizar_perfil(dni: str, payload: PerfilSocioUpdate) -> SocioResponse:
+@app.patch("/api/v1/portal/{dni}/perfil")
+def actualizar_perfil(dni: str, payload: PerfilSocioUpdate) -> dict:
     socio = obtener_por_dni(dni)
-    datos = {
-        "id_socio": socio["id_socio"] if socio else str(uuid4()),
-        "nombres": payload.nombres.strip(),
-        "apellidos": payload.apellidos.strip(),
-        "dni": dni,
-        "email": payload.email.strip().lower(),
-        "telefono": payload.telefono,
-        "aporte_mensual": round(payload.aporte_mensual, 2),
-        "fecha_registro": socio.get("fecha_registro", datetime.now(timezone.utc))
-        if socio
-        else datetime.now(timezone.utc),
-        "activo": True,
+    if not socio:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+    if not socio.get("activo", True):
+        raise HTTPException(status_code=403, detail="La cuenta está inactiva.")
+
+    email = payload.email.strip().lower()
+    existente = obtener_por_email(email)
+    if existente and existente["dni"] != dni:
+        raise HTTPException(status_code=409, detail="El correo ya está registrado en otro socio.")
+
+    try:
+        actualizado = actualizar_socio(
+            socio["id_socio"],
+            {
+                "nombres": socio["nombres"],
+                "apellidos": socio["apellidos"],
+                "email": email,
+                "telefono": payload.telefono,
+                "aporte_mensual": socio.get("aporte_mensual", 50.0),
+                "activo": True,
+            },
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    if not actualizado:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+
+    return {
+        "id_socio": actualizado["id_socio"],
+        "nombres": actualizado["nombres"],
+        "apellidos": actualizado["apellidos"],
+        "dni": actualizado["dni"],
+        "email": actualizado["email"],
+        "telefono": actualizado.get("telefono", ""),
+        "aporte_mensual": actualizado.get("aporte_mensual", 50.0),
+        "fecha_registro": actualizado.get("fecha_registro"),
     }
-    return SocioResponse(**guardar_socio(datos))
+
+
+@app.delete("/api/v1/portal/{dni}/cuenta")
+def eliminar_cuenta_socio(dni: str) -> dict:
+    socio = obtener_por_dni(dni)
+    if not socio:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+    if socio.get("rol") == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No puede eliminar una cuenta administrador desde el portal.",
+        )
+    if not socio.get("activo", True):
+        raise HTTPException(status_code=400, detail="La cuenta ya está inactiva.")
+
+    resultado = eliminar_socio(socio["id_socio"])
+    if not resultado:
+        raise HTTPException(status_code=404, detail="Socio no encontrado.")
+
+    return {
+        "mensaje": "Su cuenta ha sido desactivada. Ya no podrá iniciar sesión.",
+        "dni": dni,
+    }
