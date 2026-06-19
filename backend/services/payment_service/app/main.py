@@ -3,18 +3,24 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 
 from app.database import init_db
 from app.repository import (
     actualizar_aportacion,
     eliminar_por_dni,
     guardar_lote,
+    listar_aportaciones_paginado,
     listar_con_estado,
     obtener_aportacion,
     resumen_aportaciones,
 )
-from app.schemas import AportacionResponse, LoteAportaciones, ResumenAportaciones
+from app.schemas import (
+    AportacionResponse,
+    AportacionesPaginadasResponse,
+    LoteAportaciones,
+    ResumenAportaciones,
+)
 
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
 _cache_nombres: dict[str, str] = {}
@@ -41,8 +47,14 @@ def crear_lote(payload: LoteAportaciones) -> dict[str, int]:
 
 
 @app.get("/internal/aportaciones")
-def aportaciones_internas(dni: str | None = None) -> list[dict]:
-    return [_enriquecer(a) for a in listar_con_estado(dni)]
+def aportaciones_internas(
+    dni: str | None = None,
+    enriquecer: bool = Query(default=True),
+) -> list[dict]:
+    items = listar_con_estado(dni)
+    if not enriquecer:
+        return items
+    return [_enriquecer(a) for a in items]
 
 
 @app.get("/internal/aportaciones/resumen")
@@ -55,14 +67,26 @@ def eliminar_datos_socio(dni: str) -> dict[str, int]:
     return {"aportaciones_eliminadas": eliminar_por_dni(dni)}
 
 
-@app.get("/api/v1/admin/aportaciones", response_model=list[AportacionResponse])
-def obtener_aportaciones() -> list[AportacionResponse]:
-    return [_map(a) for a in listar_con_estado()]
+@app.get("/api/v1/admin/aportaciones", response_model=AportacionesPaginadasResponse)
+def obtener_aportaciones(
+    dni: str | None = Query(default=None, min_length=8, max_length=8),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=50),
+) -> AportacionesPaginadasResponse:
+    items, total = listar_aportaciones_paginado(dni=dni, page=page, page_size=page_size)
+    total_pages = (total + page_size - 1) // page_size if total else 0
+    return AportacionesPaginadasResponse(
+        items=[_map(a) for a in items],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )
 
 
 @app.get("/api/v1/admin/aportaciones/resumen", response_model=ResumenAportaciones)
-def obtener_resumen() -> ResumenAportaciones:
-    return ResumenAportaciones(**resumen_aportaciones())
+def obtener_resumen(dni: str | None = Query(default=None, min_length=8, max_length=8)) -> ResumenAportaciones:
+    return ResumenAportaciones(**resumen_aportaciones(dni))
 
 
 @app.post("/api/v1/admin/aportaciones/{id_aportacion}/pagar", response_model=AportacionResponse)

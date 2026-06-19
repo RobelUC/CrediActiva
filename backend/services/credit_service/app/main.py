@@ -1,10 +1,11 @@
 import os
+import re
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from uuid import uuid4
 
 import httpx
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Query, status
 
 from app.calculadora import (
     calcular_auditoria_credito,
@@ -13,13 +14,25 @@ from app.calculadora import (
 )
 from app.cronograma import generar_cronograma
 from app.database import init_db
-from app.repository import actualizar_solicitud, eliminar_por_dni, guardar_solicitud, listar_solicitudes, obtener_solicitud
+from app.repository import (
+    MAX_SOLICITUDES_PENDIENTES,
+    actualizar_solicitud,
+    contar_pendientes_por_dni,
+    eliminar_por_dni,
+    eliminar_solicitud_socio,
+    guardar_solicitud,
+    listar_solicitudes,
+    obtener_solicitud,
+)
 from app.schemas import (
+    DisponibilidadSolicitudResponse,
     EvaluarSolicitudRequest,
     SolicitudAdminResponse,
     SolicitudCredito,
     SolicitudCreditoResponse,
 )
+
+_DNI = re.compile(r"^\d{8}$")
 
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
 PAYMENT_SERVICE_URL = os.getenv("PAYMENT_SERVICE_URL", "http://localhost:8003")
@@ -39,12 +52,38 @@ def health() -> dict[str, str]:
     return {"status": "ok", "servicio": "credit-service"}
 
 
+@app.get(
+    "/api/v1/solicitudes/disponibilidad/{dni}",
+    response_model=DisponibilidadSolicitudResponse,
+)
+def disponibilidad_solicitud(dni: str) -> DisponibilidadSolicitudResponse:
+    if not _DNI.match(dni):
+        raise HTTPException(status_code=400, detail="DNI inválido.")
+    pendientes = contar_pendientes_por_dni(dni)
+    return DisponibilidadSolicitudResponse(
+        dni_usuario=dni,
+        pendientes=pendientes,
+        maximo_pendientes=MAX_SOLICITUDES_PENDIENTES,
+        puede_solicitar=pendientes < MAX_SOLICITUDES_PENDIENTES,
+    )
+
+
 @app.post(
     "/api/v1/solicitudes",
     response_model=SolicitudCreditoResponse,
     status_code=status.HTTP_201_CREATED,
 )
 def crear_solicitud(payload: SolicitudCredito) -> SolicitudCreditoResponse:
+    pendientes = contar_pendientes_por_dni(payload.dni_usuario)
+    if pendientes >= MAX_SOLICITUDES_PENDIENTES:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Ya tiene {pendientes} solicitudes pendientes (máximo {MAX_SOLICITUDES_PENDIENTES}). "
+                "Espere a que una sea aprobada o rechazada, o elimine una solicitud pendiente."
+            ),
+        )
+
     auditoria = calcular_auditoria_credito(payload.monto, payload.plazo_meses, payload.tipo_credito)
     estado = determinar_estado_preaprobacion(payload.monto)
     id_solicitud = str(uuid4())
@@ -116,9 +155,36 @@ def evaluar_solicitud(id_solicitud: str, payload: EvaluarSolicitudRequest) -> So
     return _map_admin(actualizada)  # type: ignore[arg-type]
 
 
+@app.delete("/api/v1/solicitudes/{id_solicitud}", status_code=status.HTTP_200_OK)
+def eliminar_solicitud(
+    id_solicitud: str,
+    dni_usuario: str = Query(..., min_length=8, max_length=8),
+) -> dict[str, str]:
+    if not _DNI.match(dni_usuario):
+        raise HTTPException(status_code=400, detail="DNI inválido.")
+    ok, mensaje = eliminar_solicitud_socio(id_solicitud, dni_usuario)
+    if not ok:
+        codigo = 404 if mensaje == "Solicitud no encontrada." else 400
+        raise HTTPException(status_code=codigo, detail=mensaje)
+    return {"mensaje": "Solicitud eliminada correctamente."}
+
+
 @app.get("/internal/solicitudes")
-def solicitudes_internas(dni: str | None = None) -> list[dict]:
-    return listar_solicitudes(dni)
+def solicitudes_internas(
+    dni: str | None = None,
+    incluir_cronograma: bool = Query(default=True),
+) -> list[dict]:
+    return listar_solicitudes(dni, incluir_cronograma=incluir_cronograma)
+
+
+@app.get("/internal/solicitudes/{id_solicitud}")
+def solicitud_interna(id_solicitud: str, dni: str | None = None) -> dict:
+    solicitud = obtener_solicitud(id_solicitud)
+    if not solicitud:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada.")
+    if dni and solicitud.get("dni_usuario") != dni:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada.")
+    return solicitud
 
 
 @app.delete("/internal/datos-socio/{dni}")

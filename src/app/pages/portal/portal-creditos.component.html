@@ -2,37 +2,67 @@
   <header class="portal-page__header mb-4">
     <h1 class="h3 mb-1">Mis créditos</h1>
     <p class="text-muted mb-0">Solicitudes y créditos formalizados con CrediActiva</p>
+    @if (mensaje()) {
+      <div class="alert alert-success mt-3 mb-0 small" role="status">{{ mensaje() }}</div>
+    }
+    @if (error()) {
+      <div class="alert alert-danger mt-3 mb-0 small" role="alert">{{ error() }}</div>
+    }
   </header>
 
   <div class="row g-4">
     <div class="col-lg-5">
       <div class="card portal-card shadow-sm">
-        <div class="card-header portal-card__header">Listado ({{ creditos().length }})</div>
-        <div class="list-group list-group-flush">
-          @for (c of creditos(); track c.id_solicitud) {
+        <div class="card-header portal-card__header">
+          Mis solicitudes ({{ creditos().length }})
+        </div>
+
+        <div class="portal-creditos__tabs border-bottom" role="tablist" aria-label="Estado de créditos">
+          @for (sec of secciones; track sec.id) {
             <button
               type="button"
-              class="list-group-item list-group-item-action"
-              [class.active]="seleccionado()?.id_solicitud === c.id_solicitud"
-              (click)="seleccionar(c)"
+              class="portal-creditos__tab {{ claseSeccion(sec.id) }}"
+              role="tab"
+              [class.portal-creditos__tab--active]="seccionActiva() === sec.id"
+              [attr.aria-selected]="seccionActiva() === sec.id"
+              (click)="cambiarSeccion(sec.id)"
             >
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
-                  <strong>{{ c.tipo_credito }}</strong>
-                  <br />
-                  <small class="text-muted">
-                    {{ c.monto | soles : '1.0-0' }} · {{ c.plazo_meses }} meses
-                  </small>
-                </div>
-                <span class="badge bg-{{ badgeEstado(c.estado_evaluacion) }}">
-                  {{ c.estado_evaluacion }}
-                </span>
-              </div>
+              <span class="portal-creditos__tab-label">{{ sec.label }}</span>
+              <span class="portal-creditos__count">{{ contarSeccion(sec.id) }}</span>
             </button>
-          } @empty {
-            <p class="p-4 text-muted text-center mb-0">
-              Aún no tiene solicitudes. Use el simulador para solicitar un crédito.
-            </p>
+          }
+        </div>
+
+        <div class="list-group list-group-flush">
+          @if (cargando()) {
+            <p class="p-4 text-muted text-center mb-0">Cargando créditos…</p>
+          } @else if (seccionVacia()) {
+            <div class="portal-creditos__list-empty {{ claseEmptySeccion() }}">
+              <strong>{{ tituloSeccionVacia(seccionActiva()) }}</strong>
+              <p class="mb-0">{{ mensajeSeccionVacia(seccionActiva()) }}</p>
+            </div>
+          } @else {
+            @for (c of creditosFiltrados(); track c.id_solicitud) {
+              <button
+                type="button"
+                class="list-group-item list-group-item-action"
+                [class.active]="seleccionado()?.id_solicitud === c.id_solicitud"
+                (click)="seleccionar(c)"
+              >
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <strong>{{ c.tipo_credito }}</strong>
+                    <br />
+                    <small class="text-muted">
+                      {{ c.monto | soles : '1.0-0' }} · {{ c.plazo_meses }} meses
+                    </small>
+                  </div>
+                  <span class="badge bg-{{ badgeEstado(c.estado_evaluacion) }}">
+                    {{ c.estado_evaluacion }}
+                  </span>
+                </div>
+              </button>
+            }
           }
         </div>
       </div>
@@ -41,9 +71,17 @@
     <div class="col-lg-7">
       @if (seleccionado(); as c) {
         <div class="card portal-card shadow-sm mb-3">
-          <div class="card-header portal-card__header">Detalle del crédito</div>
+          <div class="card-header portal-card__header">
+            Detalle del crédito — {{ seccionActiva() | titlecase }}
+          </div>
           <div class="card-body">
             <dl class="row small">
+              <dt class="col-4">Estado</dt>
+              <dd class="col-8">
+                <span class="badge bg-{{ badgeEstado(c.estado_evaluacion) }}">
+                  {{ c.estado_evaluacion }}
+                </span>
+              </dd>
               <dt class="col-4">ID</dt>
               <dd class="col-8 text-break">{{ c.id_solicitud }}</dd>
               <dt class="col-4">Monto</dt>
@@ -57,6 +95,21 @@
               <dt class="col-4">Fecha solicitud</dt>
               <dd class="col-8">{{ c.fecha_registro | date : 'mediumDate' }}</dd>
             </dl>
+
+            @if (puedeEliminar(c)) {
+              <button
+                type="button"
+                class="btn btn-danger w-100"
+                [disabled]="eliminando()"
+                (click)="eliminarCredito(c)"
+              >
+                @if (eliminando()) {
+                  Eliminando solicitud…
+                } @else {
+                  Eliminar solicitud pendiente
+                }
+              </button>
+            }
           </div>
         </div>
 
@@ -90,11 +143,28 @@
               </table>
             </div>
           </div>
+        } @else if (cargandoDetalle()) {
+          <div class="card portal-card shadow-sm">
+            <div class="card-body text-center py-4 text-muted small">
+              Cargando cronograma…
+            </div>
+          </div>
         }
       } @else {
-        <div class="card portal-card shadow-sm">
-          <div class="card-body text-center text-muted py-5">
-            Seleccione un crédito para ver el detalle
+        <div class="card portal-card shadow-sm portal-creditos__empty {{ claseEmptySeccion() }}">
+          <div class="card-body text-center py-5 px-4">
+            @if (creditos().length === 0) {
+              <p class="portal-creditos__empty-title mb-2">Sin solicitudes registradas</p>
+              <p class="text-muted mb-0">{{ mensajeGlobalVacio() }}</p>
+            } @else {
+              <p class="portal-creditos__empty-title mb-2">
+                {{ tituloSeccionVacia(seccionActiva()) }}
+              </p>
+              <p class="text-muted mb-0">{{ mensajeSeccionVacia(seccionActiva()) }}</p>
+              <p class="small text-muted mt-3 mb-0">
+                Total en esta sección: <strong>{{ contarSeccion(seccionActiva()) }}</strong>
+              </p>
+            }
           </div>
         </div>
       }

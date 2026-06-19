@@ -1,10 +1,10 @@
 <div class="admin-page container-fluid py-4">
-  <header class="admin-page__header mb-4 d-flex justify-content-between align-items-center">
+  <header class="admin-page__header mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
       <h1 class="h3 mb-1">Control de aportaciones</h1>
       <p class="text-muted mb-0">Monitoreo en tiempo real del cumplimiento de pagos</p>
     </div>
-    <button type="button" class="btn btn-outline-primary btn-sm" (click)="refrescar()">
+    <button type="button" class="btn btn-outline-primary btn-sm" (click)="refrescar(true)">
       <i class="bi bi-arrow-clockwise"></i> Actualizar
     </button>
   </header>
@@ -39,8 +39,48 @@
     </div>
     <p class="small text-muted mb-3">
       <i class="bi bi-broadcast"></i> Tiempo real · {{ r.actualizado_en | date : 'mediumTime' }}
+      @if (dniFiltro()) {
+        · Filtrado por socio
+      }
     </p>
   }
+
+  <div class="card admin-card shadow-sm mb-3">
+    <div class="card-body py-3">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label mb-1" for="buscar-dni-aportes">Buscar por DNI</label>
+          <input
+            id="buscar-dni-aportes"
+            type="text"
+            class="form-control"
+            caSoloNumeros
+            maxlength="8"
+            inputmode="numeric"
+            placeholder="12345678"
+            [class.is-invalid]="dniBusquedaInvalido()"
+            [value]="dniBusqueda()"
+            (input)="actualizarDniBusqueda($any($event.target).value)"
+            (keydown.enter)="$event.preventDefault(); buscarPorDni()"
+          />
+          <div class="form-text">
+            Solo socios con crédito <strong>APROBADO</strong> ({{ sociosAprobados().length }} disponibles).
+          </div>
+        </div>
+        <div class="col-md-4">
+          <button type="button" class="btn btn-primary" (click)="buscarPorDni()">Buscar</button>
+        </div>
+        <div class="col-md-3">
+          <p class="small text-muted mb-0">
+            Mostrando <strong>{{ rangoRegistros() }}</strong>
+            @if (nombreSocioFiltrado(); as nombre) {
+              <br /><span class="text-dark">{{ nombre }}</span>
+            }
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="card admin-card shadow-sm">
     <div class="table-responsive">
@@ -56,26 +96,69 @@
           </tr>
         </thead>
         <tbody>
-          @for (a of aportaciones(); track a.id_aportacion) {
+          @if (cargando()) {
             <tr>
-              <td><strong>{{ a.nombre_socio }}</strong><br /><small>{{ a.dni_socio }}</small></td>
-              <td>{{ a.numero_cuota }}</td>
-              <td>{{ a.monto_cuota | soles : '1.2-2' }}</td>
-              <td>{{ a.fecha_vencimiento }}</td>
-              <td><span class="badge bg-{{ badgeAport(a.estado) }}">{{ a.estado }}</span></td>
-              <td>
-                @if (a.estado !== 'PAGADO') {
-                  <button type="button" class="btn btn-sm btn-success" (click)="registrarPago(a)">Registrar pago</button>
-                } @else {
-                  <small>{{ a.fecha_pago }}</small>
-                }
-              </td>
+              <td colspan="6" class="text-center py-4 text-muted">Cargando aportaciones…</td>
             </tr>
-          } @empty {
-            <tr><td colspan="6" class="text-center py-4 text-muted">Sin aportaciones — apruebe préstamos primero</td></tr>
+          } @else {
+            @for (a of aportaciones(); track a.id_aportacion) {
+              <tr>
+                <td><strong>{{ a.nombre_socio }}</strong><br /><small>{{ a.dni_socio }}</small></td>
+                <td>{{ a.numero_cuota }}</td>
+                <td>{{ a.monto_cuota | soles : '1.2-2' }}</td>
+                <td>{{ a.fecha_vencimiento }}</td>
+                <td><span class="badge bg-{{ badgeAport(a.estado) }}">{{ a.estado }}</span></td>
+                <td>
+                  @if (a.estado !== 'PAGADO') {
+                    <button type="button" class="btn btn-sm btn-success" (click)="registrarPago(a)">
+                      Registrar pago
+                    </button>
+                  } @else {
+                    <small>{{ a.fecha_pago }}</small>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center py-4 text-muted">
+                  @if (dniFiltro()) {
+                    Este socio no tiene aportaciones registradas.
+                  } @else {
+                    Ingrese un DNI y pulse Buscar para ver las aportaciones.
+                  }
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
     </div>
+
+    @if (totalPaginas() > 1) {
+      <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span class="small text-muted">Página {{ paginaActual() }} de {{ totalPaginas() }}</span>
+        <nav aria-label="Paginación de aportaciones">
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="!hayPaginaAnterior()">
+              <button type="button" class="page-link" (click)="irPagina(paginaActual() - 1)">
+                Anterior
+              </button>
+            </li>
+            @for (p of paginas(); track p) {
+              <li class="page-item" [class.active]="paginaActual() === p">
+                <button type="button" class="page-link" (click)="irPagina(p)">
+                  {{ p }}
+                </button>
+              </li>
+            }
+            <li class="page-item" [class.disabled]="!hayPaginaSiguiente()">
+              <button type="button" class="page-link" (click)="irPagina(paginaActual() + 1)">
+                Siguiente
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    }
   </div>
 </div>

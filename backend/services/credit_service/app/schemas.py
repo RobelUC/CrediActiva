@@ -63,6 +63,13 @@ class EvaluarSolicitudRequest(BaseModel):
     observaciones: str = Field(default="", max_length=500)
 
 
+class DisponibilidadSolicitudResponse(BaseModel):
+    dni_usuario: str
+    pendientes: int
+    maximo_pendientes: int
+    puede_solicitar: bool
+
+
 class SolicitudAdminResponse(BaseModel):
     id_solicitud: str
     dni_usuario: str

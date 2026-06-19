@@ -13,8 +13,10 @@ def _calcular_estado(aportacion: Aportacion) -> str:
     return "PENDIENTE"
 
 
-def _to_dict(aportacion: Aportacion) -> dict[str, Any]:
+def _to_dict(aportacion: Aportacion, *, persistir_estado: bool = False) -> dict[str, Any]:
     estado = aportacion.estado_pago or _calcular_estado(aportacion)
+    if persistir_estado and aportacion.estado_pago != estado:
+        aportacion.estado_pago = estado
     return {
         "id_aportacion": aportacion.id_aportacion,
         "id_solicitud": aportacion.id_solicitud,
@@ -66,16 +68,34 @@ def guardar_lote(lote: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def listar_aportaciones(dni: str | None = None) -> list[dict[str, Any]]:
     with SessionLocal() as db:
         query = db.query(Aportacion).order_by(
-            Aportacion.fecha_vencimiento.desc(),
-            Aportacion.numero_cuota.desc(),
+            Aportacion.numero_cuota.asc(),
+            Aportacion.fecha_vencimiento.asc(),
         )
         if dni:
             query = query.filter(Aportacion.dni_socio == dni)
-        items = query.all()
-        for item in items:
-            item.estado_pago = _calcular_estado(item)
-        db.commit()
-        return [_to_dict(a) for a in items]
+        return [_to_dict(a) for a in query.all()]
+
+
+def listar_aportaciones_paginado(
+    dni: str | None = None,
+    page: int = 1,
+    page_size: int = 10,
+) -> tuple[list[dict[str, Any]], int]:
+    page = max(page, 1)
+    page_size = max(min(page_size, 50), 1)
+
+    with SessionLocal() as db:
+        query = db.query(Aportacion).order_by(
+            Aportacion.numero_cuota.asc(),
+            Aportacion.fecha_vencimiento.asc(),
+        )
+        if dni:
+            query = query.filter(Aportacion.dni_socio == dni)
+
+        total = query.count()
+        offset = (page - 1) * page_size
+        items = query.offset(offset).limit(page_size).all()
+        return [_to_dict(a) for a in items], total
 
 
 def obtener_aportacion(id_aportacion: str) -> dict[str, Any] | None:
@@ -83,8 +103,6 @@ def obtener_aportacion(id_aportacion: str) -> dict[str, Any] | None:
         aportacion = db.query(Aportacion).filter(Aportacion.id_aportacion == id_aportacion).first()
         if not aportacion:
             return None
-        aportacion.estado_pago = _calcular_estado(aportacion)
-        db.commit()
         return _to_dict(aportacion)
 
 
@@ -118,11 +136,11 @@ def _estado(aportacion: dict[str, Any]) -> str:
 
 
 def listar_con_estado(dni: str | None = None) -> list[dict[str, Any]]:
-    return [{**a, "estado": _estado(a)} for a in listar_aportaciones(dni)]
+    return listar_aportaciones(dni)
 
 
-def resumen_aportaciones() -> dict[str, Any]:
-    items = listar_con_estado()
+def resumen_aportaciones(dni: str | None = None) -> dict[str, Any]:
+    items = listar_con_estado(dni)
     pagadas = [a for a in items if a["estado"] == "PAGADO"]
     pendientes = [a for a in items if a["estado"] == "PENDIENTE"]
     vencidas = [a for a in items if a["estado"] == "VENCIDO"]

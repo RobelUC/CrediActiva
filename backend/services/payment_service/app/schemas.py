@@ -41,3 +41,11 @@ class ResumenAportaciones(BaseModel):
     monto_pagado: float
     monto_pendiente: float
     actualizado_en: datetime
+
+
+class AportacionesPaginadasResponse(BaseModel):
+    items: list[AportacionResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int

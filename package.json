@@ -6,6 +6,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:prod": "node scripts/set-api-url.js && ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "build:css": "sass assets/scss/bootstrap-crediactiva.scss assets/css/crediactiva.bundle.css --load-path=node_modules",
     "build:css:lite": "sass assets/scss/main.scss assets/css/crediactiva.css --load-path=node_modules"

@@ -10,24 +10,36 @@
       />
       <span>CREDI ACTIVA</span>
     </a>
-    <div class="d-flex align-items-center gap-2">
+    <nav class="simulator-page-nav__actions" aria-label="Navegación del simulador">
       @if (auth.sesionActiva()) {
-        <span class="simulator-page-nav__user small text-muted">
+        <p class="simulator-page-nav__user mb-0">
           Hola, <strong>{{ auth.usuario()?.nombres }}</strong>
-        </span>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-danger"
-          (click)="auth.cerrarSesion()"
-        >
-          Salir
-        </button>
-      } @else {
-        <a class="btn btn-sm btn-outline-primary" routerLink="/portal">Mi portal</a>
-        <a class="btn btn-sm btn-success" routerLink="/registro">Registrarse</a>
+        </p>
       }
-      <a class="btn btn-sm btn-outline-secondary" routerLink="/">← Inicio</a>
-    </div>
+
+      <div class="simulator-page-nav__pills" role="group">
+        @if (auth.sesionActiva()) {
+          <a class="simulator-page-nav__pill" routerLink="/portal">
+            <i class="bi bi-grid-fill" aria-hidden="true"></i>
+            Inicio
+          </a>
+        } @else {
+          <a class="simulator-page-nav__pill" routerLink="/login" [queryParams]="{ returnUrl: '/simulador' }">
+            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+            Iniciar sesión
+          </a>
+          <a class="simulator-page-nav__pill simulator-page-nav__pill--accent" routerLink="/registro">
+            <i class="bi bi-person-plus" aria-hidden="true"></i>
+            Registrarse
+          </a>
+        }
+
+        <a class="simulator-page-nav__pill simulator-page-nav__pill--ghost" routerLink="/">
+          <i class="bi bi-house-door" aria-hidden="true"></i>
+          Página principal
+        </a>
+      </div>
+    </nav>
   </div>
 </header>
 
@@ -104,25 +116,19 @@
             <input
               id="dni"
               type="text"
-              class="form-control form-control-lg"
-              caSoloNumeros
-              [class.is-invalid]="dniUsuario().length > 0 && !esDniValido()"
-              [value]="dniUsuario()"
-              maxlength="8"
-              inputmode="numeric"
-              placeholder="12345678"
-              aria-describedby="dni-help dni-error"
-              (input)="actualizarDni($any($event.target).value)"
+              class="form-control form-control-lg simulator-form__dni-locked"
+              [value]="dniSesion()"
+              readonly
+              disabled
+              aria-describedby="dni-help"
             />
-            @if (dniUsuario().length > 0 && !esDniValido()) {
-              <div id="dni-error" class="invalid-feedback d-block" role="alert">
-                El DNI peruano debe tener exactamente 8 dígitos.
-              </div>
-            } @else {
-              <div id="dni-help" class="form-text">
-                Ingrese su DNI de 8 dígitos sin guiones.
-              </div>
-            }
+            <div id="dni-help" class="form-text">
+              DNI vinculado a su cuenta registrada
+              @if (nombreSesion()) {
+                ({{ nombreSesion() }})
+              }
+              . No puede modificarse.
+            </div>
           </div>
 
           <div>
@@ -132,12 +138,14 @@
             <select
               id="plazo"
               class="form-select form-select-lg"
-              [ngModel]="plazoMeses()"
-              (ngModelChange)="actualizarPlazo($event)"
+              [value]="plazoMeses()"
+              (change)="actualizarPlazo($any($event.target).value)"
               [attr.aria-valuenow]="plazoMeses()"
             >
               @for (mes of plazosDisponibles; track mes) {
-                <option [ngValue]="mes">{{ mes }} meses</option>
+                <option [value]="mes" [selected]="mes === plazoMeses()">
+                  {{ mes }} meses
+                </option>
               }
             </select>
           </div>
@@ -193,6 +201,51 @@
               </dd>
             </dl>
 
+            @if (disponibilidad(); as disp) {
+              <div
+                class="simulator-cupo mb-3"
+                [class.simulator-cupo--ok]="disp.pendientes === 0"
+                [class.simulator-cupo--warn]="disp.pendientes === 1"
+                [class.simulator-cupo--full]="!disp.puede_solicitar"
+              >
+                <div class="simulator-cupo__header">
+                  <span class="simulator-cupo__title">Cupo de solicitudes</span>
+                  <span class="simulator-cupo__count">{{ disp.pendientes }} / {{ disp.maximo_pendientes }}</span>
+                </div>
+
+                <div class="simulator-cupo__track" aria-hidden="true">
+                  @for (slot of slotsPendientes(); track $index) {
+                    <span
+                      class="simulator-cupo__slot"
+                      [class.simulator-cupo__slot--used]="$index < disp.pendientes"
+                    ></span>
+                  }
+                </div>
+
+                <p class="simulator-cupo__hint mb-0">
+                  @if (disp.puede_solicitar) {
+                    Puede enviar
+                    <strong>{{ cupoRestante() }}</strong>
+                    solicitud{{ cupoRestante() === 1 ? '' : 'es' }} más.
+                  } @else {
+                    Límite alcanzado. Elimine o espere la evaluación de una solicitud pendiente.
+                  }
+                </p>
+
+                <a class="simulator-cupo__link" routerLink="/portal/creditos">
+                  Ver mis créditos →
+                </a>
+              </div>
+            }
+
+            @if (!puedeSolicitar()) {
+              <div class="simulator-cupo-alert mb-3" role="alert">
+                Ya tiene {{ MAX_SOLICITUDES_PENDIENTES }} solicitudes pendientes.
+                Espere a que una sea aprobada o rechazada, o elimine una desde
+                <a routerLink="/portal/creditos">Mis créditos</a>.
+              </div>
+            }
+
             <button
               type="button"
               class="btn btn-primary btn-crediactiva-primary btn-lg w-100"
@@ -206,20 +259,24 @@
               }
             </button>
 
-            @if (mensajeExito()) {
-              <div class="alert alert-success mt-3 mb-0 small" role="status">
-                {{ mensajeExito() }}
+            @if (errorSolicitudMsg()) {
+              <div class="alert alert-danger mt-3 mb-0 small" role="alert">
+                {{ errorSolicitudMsg() }}
               </div>
             }
 
-            @if (!formularioValido() && (monto() > 0 || dniUsuario().length > 0)) {
+            @if (mensajeExito()) {
+              <div class="alert alert-success mt-3 mb-0 small" role="status">
+                {{ mensajeExito() }}
+                <a class="d-block mt-2 fw-semibold" routerLink="/portal/creditos">
+                  Ver en Mis créditos →
+                </a>
+              </div>
+            }
+
+            @if (!formularioValido() && monto() > 0 && !esMontoValido()) {
               <p class="small text-danger text-center mt-3 mb-0" role="status">
-                @if (!esMontoValido() && monto() > 0) {
-                  Monto mínimo S/. {{ MONTO_MINIMO | number : '1.0-0' }}.
-                }
-                @if (!esDniValido() && dniUsuario().length > 0) {
-                  DNI inválido (8 dígitos).
-                }
+                Monto mínimo S/. {{ MONTO_MINIMO | number : '1.0-0' }}.
               </p>
             }
           </div>

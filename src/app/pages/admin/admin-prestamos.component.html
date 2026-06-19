@@ -13,9 +13,28 @@
   <div class="row g-4">
     <div class="col-lg-5">
       <div class="card admin-card shadow-sm">
-        <div class="card-header admin-card__header">Solicitudes de crédito</div>
+        <div class="card-header admin-card__header">
+          Solicitudes ({{ solicitudes().length }})
+        </div>
+
+        <div class="admin-prestamos__tabs border-bottom" role="tablist" aria-label="Estado de préstamos">
+          @for (sec of secciones; track sec.id) {
+            <button
+              type="button"
+              class="admin-prestamos__tab {{ claseSeccion(sec.id) }}"
+              role="tab"
+              [class.admin-prestamos__tab--active]="seccionActiva() === sec.id"
+              [attr.aria-selected]="seccionActiva() === sec.id"
+              (click)="cambiarSeccion(sec.id)"
+            >
+              <span class="admin-prestamos__tab-label">{{ sec.label }}</span>
+              <span class="admin-prestamos__count">{{ contarSeccion(sec.id) }}</span>
+            </button>
+          }
+        </div>
+
         <div class="list-group list-group-flush admin-list">
-          @for (s of solicitudes(); track s.id_solicitud) {
+          @for (s of solicitudesFiltradas(); track s.id_solicitud) {
             <button
               type="button"
               class="list-group-item list-group-item-action"
@@ -31,16 +50,20 @@
               </small>
             </button>
           } @empty {
-            <p class="p-4 text-muted mb-0 text-center">No hay solicitudes registradas</p>
+            <div class="admin-prestamos__empty {{ claseSeccion(seccionActiva()) }}">
+              <strong>{{ tituloSeccionVacia(seccionActiva()) }}</strong>
+              <p class="mb-0">{{ mensajeSeccionVacia(seccionActiva()) }}</p>
+            </div>
           }
         </div>
       </div>
     </div>
+
     <div class="col-lg-7">
       @if (solicitudSeleccionada(); as sel) {
         <div class="card admin-card shadow-sm">
           <div class="card-header admin-card__header d-flex justify-content-between">
-            <span>Evaluación de préstamo</span>
+            <span>Evaluación — {{ seccionActiva() | titlecase }}</span>
             <span class="badge bg-{{ badgeEval(sel.estado_evaluacion) }}">{{ sel.estado_evaluacion }}</span>
           </div>
           <div class="card-body">
@@ -51,10 +74,30 @@
               <dt class="col-4">Producto</dt><dd class="col-8">{{ sel.tipo_credito }}</dd>
             </dl>
             @if (sel.estado_evaluacion === 'PENDIENTE') {
-              <textarea class="form-control mb-3" rows="2" placeholder="Observaciones" [value]="observacionesEval()" (input)="observacionesEval.set($any($event.target).value)"></textarea>
+              <textarea
+                class="form-control mb-3"
+                rows="2"
+                placeholder="Observaciones"
+                [value]="observacionesEval()"
+                (input)="observacionesEval.set($any($event.target).value)"
+              ></textarea>
               <div class="d-flex gap-2">
-                <button type="button" class="btn btn-success flex-fill" [disabled]="cargando()" (click)="evaluar('APROBADO')">Aprobar y generar cronograma</button>
-                <button type="button" class="btn btn-outline-danger" [disabled]="cargando()" (click)="evaluar('RECHAZADO')">Rechazar</button>
+                <button
+                  type="button"
+                  class="btn btn-success flex-fill"
+                  [disabled]="cargando()"
+                  (click)="evaluar('APROBADO')"
+                >
+                  Aprobar y generar cronograma
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  [disabled]="cargando()"
+                  (click)="evaluar('RECHAZADO')"
+                >
+                  Rechazar
+                </button>
               </div>
             }
             @if (sel.cronograma.length > 0) {
@@ -82,8 +125,11 @@
           </div>
         </div>
       } @else {
-        <div class="card admin-card shadow-sm">
-          <div class="card-body text-center text-muted py-5">Seleccione una solicitud para evaluar</div>
+        <div class="card admin-card shadow-sm admin-prestamos__empty {{ claseSeccion(seccionActiva()) }}">
+          <div class="card-body text-center py-5 px-4">
+            <p class="admin-prestamos__empty-title mb-2">{{ tituloSeccionVacia(seccionActiva()) }}</p>
+            <p class="text-muted mb-0">{{ mensajeSeccionVacia(seccionActiva()) }}</p>
+          </div>
         </div>
       }
     </div>

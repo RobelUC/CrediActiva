@@ -1,0 +1,44 @@
+# Despliegue en Render: https://render.com
+# Conectar repo GitHub → New Blueprint → seleccionar este archivo.
+#
+# Después del primer deploy del API, copia su URL pública y configura:
+#   API_URL=https://TU-API.onrender.com
+#   CORS_ORIGINS=https://TU-FRONT.onrender.com
+# Luego redeploy del frontend.
+
+services:
+  - type: web
+    name: crediactiva-api
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: APISPERU_TOKEN
+        sync: false
+
+  - type: web
+    name: crediactiva-web
+    runtime: static
+    plan: free
+    buildCommand: >-
+      npm ci &&
+      node scripts/set-api-url.js &&
+      npm run build -- --configuration production
+    staticPublishPath: dist/crediactiva-web/browser
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

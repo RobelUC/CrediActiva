@@ -58,3 +58,147 @@
   background: #00703c;
   border-color: #00703c;
 }
+
+.admin-prestamos__tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f1f5f9;
+}
+
+.admin-prestamos__tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.65rem 0.35rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  }
+
+  &--active {
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+    transform: translateY(-1px);
+  }
+}
+
+.admin-prestamos__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.admin-prestamos__tab--pendiente {
+  border-color: #fbbf24;
+
+  .admin-prestamos__count {
+    background: #f59e0b;
+    color: #78350f;
+  }
+
+  &.admin-prestamos__tab--active {
+    background: #fffbeb;
+    border-color: #f59e0b;
+    color: #92400e;
+  }
+}
+
+.admin-prestamos__tab--aprobado {
+  border-color: #34d399;
+
+  .admin-prestamos__count {
+    background: #10b981;
+    color: #fff;
+  }
+
+  &.admin-prestamos__tab--active {
+    background: #ecfdf5;
+    border-color: #10b981;
+    color: #065f46;
+  }
+}
+
+.admin-prestamos__tab--rechazado {
+  border-color: #f87171;
+
+  .admin-prestamos__count {
+    background: #ef4444;
+    color: #fff;
+  }
+
+  &.admin-prestamos__tab--active {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #991b1b;
+  }
+}
+
+.admin-prestamos__empty {
+  margin: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 0.75rem;
+  text-align: center;
+
+  strong,
+  .admin-prestamos__empty-title {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  p {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+}
+
+.admin-prestamos__empty--pendiente {
+  border: 1px solid #fde68a;
+  border-left: 5px solid #f59e0b;
+  background: #fffbeb;
+
+  strong,
+  .admin-prestamos__empty-title {
+    color: #92400e;
+  }
+}
+
+.admin-prestamos__empty--aprobado {
+  border: 1px solid #a7f3d0;
+  border-left: 5px solid #10b981;
+  background: #ecfdf5;
+
+  strong,
+  .admin-prestamos__empty-title {
+    color: #065f46;
+  }
+}
+
+.admin-prestamos__empty--rechazado {
+  border: 1px solid #fecaca;
+  border-left: 5px solid #ef4444;
+  background: #fef2f2;
+
+  strong,
+  .admin-prestamos__empty-title {
+    color: #991b1b;
+  }
+}

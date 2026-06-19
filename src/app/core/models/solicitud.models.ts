@@ -34,3 +34,10 @@ export interface SolicitudResponse {
   tipo_credito: TipoCredito;
   dni_usuario: string;
 }
+
+export interface DisponibilidadSolicitud {
+  dni_usuario: string;
+  pendientes: number;
+  maximo_pendientes: number;
+  puede_solicitar: boolean;
+}

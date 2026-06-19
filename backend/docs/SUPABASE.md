@@ -71,4 +71,3 @@ Al iniciar, cada microservicio conecta a Supabase y crea/actualiza su esquema.
 
 - **No subas** `backend/.env` a Git (ya está en `.gitignore`).
 - Los datos antiguos en `services/*/data/*.db` no se migran solos; exporta/importa manualmente si los necesitas.
-- El monolito `backend/app/` no se usa con microservicios; si lo activas, define `DATABASE_URL` igual.

@@ -59,6 +59,21 @@ export interface AporteHistorial {
   tipo_credito: string;
 }
 
+export interface AportesHistorialPaginados {
+  items: AporteHistorial[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface AportesHistorialFiltro {
+  page?: number;
+  page_size?: number;
+  estado?: 'PAGADO' | 'PENDIENTE' | 'VENCIDO';
+  refrescar?: boolean;
+}
+
 export interface PerfilSocio {
   id_socio: string | null;
   nombres: string;

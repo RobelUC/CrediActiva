@@ -7,6 +7,8 @@ from sqlalchemy.orm import joinedload
 from app.database import SessionLocal
 from app.models import CuotaCredito, EvaluacionFinanciera, Solicitud, TipoCredito
 
+MAX_SOLICITUDES_PENDIENTES = 2
+
 
 def _parse_fecha(valor: datetime | str) -> datetime:
     if isinstance(valor, datetime):
@@ -47,7 +49,7 @@ def _cronograma_dict(cuotas: list[CuotaCredito]) -> list[dict[str, Any]]:
     ]
 
 
-def _to_dict(solicitud: Solicitud) -> dict[str, Any]:
+def _to_dict(solicitud: Solicitud, *, incluir_cronograma: bool = True) -> dict[str, Any]:
     return {
         "id_solicitud": solicitud.id_solicitud,
         "dni_usuario": solicitud.dni_usuario,
@@ -59,7 +61,7 @@ def _to_dict(solicitud: Solicitud) -> dict[str, Any]:
         "mensaje": solicitud.mensaje,
         "observaciones": solicitud.observaciones,
         "auditoria": _auditoria_dict(solicitud.evaluacion_financiera),
-        "cronograma": _cronograma_dict(solicitud.cuotas),
+        "cronograma": _cronograma_dict(solicitud.cuotas) if incluir_cronograma else [],
         "fecha_registro": solicitud.fecha_registro,
     }
 
@@ -118,20 +120,53 @@ def guardar_solicitud(registro: dict[str, Any]) -> dict[str, Any]:
         return _to_dict(_cargar_solicitud(db, solicitud.id_solicitud))  # type: ignore[arg-type]
 
 
-def listar_solicitudes(dni: str | None = None) -> list[dict[str, Any]]:
+def contar_pendientes_por_dni(dni: str) -> int:
     with SessionLocal() as db:
+        return (
+            db.query(Solicitud)
+            .filter(
+                Solicitud.dni_usuario == dni,
+                Solicitud.estado_evaluacion == "PENDIENTE",
+            )
+            .count()
+        )
+
+
+def eliminar_solicitud_socio(id_solicitud: str, dni: str) -> tuple[bool, str]:
+    with SessionLocal() as db:
+        solicitud = (
+            db.query(Solicitud)
+            .filter(
+                Solicitud.id_solicitud == id_solicitud,
+                Solicitud.dni_usuario == dni,
+            )
+            .first()
+        )
+        if not solicitud:
+            return False, "Solicitud no encontrada."
+        if solicitud.estado_evaluacion != "PENDIENTE":
+            return False, "Solo puede eliminar solicitudes pendientes de evaluación."
+        db.delete(solicitud)
+        db.commit()
+        return True, ""
+
+
+def listar_solicitudes(dni: str | None = None, *, incluir_cronograma: bool = True) -> list[dict[str, Any]]:
+    with SessionLocal() as db:
+        options = [
+            joinedload(Solicitud.tipo_credito),
+            joinedload(Solicitud.evaluacion_financiera),
+        ]
+        if incluir_cronograma:
+            options.append(joinedload(Solicitud.cuotas))
         query = (
             db.query(Solicitud)
-            .options(
-                joinedload(Solicitud.tipo_credito),
-                joinedload(Solicitud.evaluacion_financiera),
-                joinedload(Solicitud.cuotas),
-            )
+            .options(*options)
             .order_by(Solicitud.fecha_registro.desc())
         )
         if dni:
             query = query.filter(Solicitud.dni_usuario == dni)
-        return [_to_dict(s) for s in query.all()]
+        return [_to_dict(s, incluir_cronograma=incluir_cronograma) for s in query.all()]
 
 
 def obtener_solicitud(id_solicitud: str) -> dict[str, Any] | None:

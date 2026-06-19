@@ -90,7 +90,3 @@ Health check de todos: `GET http://localhost:8000/health`
 - **credit-service** → auth-service (nombre del socio al aprobar crédito)
 - **credit-service** → payment-service (crear cuotas al aprobar)
 - **portal-service** → auth, credit, payment (agregar datos del portal y admin)
-
-## Monolito legacy
-
-La carpeta `backend/app/` conserva el monolito anterior (deprecated). Usar microservicios + gateway.

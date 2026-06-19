@@ -1,9 +1,13 @@
 import os
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from math import ceil
 
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
+
+from app.cache import cache_get, cache_invalidate_dni, cache_set
 
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
 CREDIT_SERVICE_URL = os.getenv("CREDIT_SERVICE_URL", "http://localhost:8002")
@@ -14,6 +18,8 @@ TEA_POR_TIPO = {
     "Vivienda": 10.5,
     "Agrícola": 12.0,
 }
+
+_HTTP_TIMEOUT = httpx.Timeout(10.0)
 
 
 @asynccontextmanager
@@ -30,11 +36,24 @@ def health() -> dict[str, str]:
 
 
 @app.get("/api/v1/portal/{dni}/resumen")
-def resumen_cuenta(dni: str) -> dict:
+def resumen_cuenta(dni: str, refrescar: bool = Query(default=False)) -> dict:
     _validar_dni(dni)
-    socio = _fetch_socio(dni)
-    solicitudes = _fetch_solicitudes(dni)
-    aportes = _fetch_aportaciones(dni)
+    if refrescar:
+        cache_invalidate_dni(dni)
+
+    cache_key = f"resumen:{dni}"
+    if not refrescar:
+        cached = cache_get(cache_key)
+        if cached is not None:
+            return cached  # type: ignore[return-value]
+
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        fut_socio = pool.submit(_fetch_socio, dni)
+        fut_solicitudes = pool.submit(_fetch_solicitudes, dni, False)
+        fut_aportes = pool.submit(_fetch_aportaciones, dni, False)
+        socio = fut_socio.result()
+        solicitudes = fut_solicitudes.result()
+        aportes = fut_aportes.result()
 
     creditos_aprobados = [s for s in solicitudes if s.get("estado_evaluacion") == "APROBADO"]
     pagadas = [a for a in aportes if a["estado"] == "PAGADO"]
@@ -60,7 +79,7 @@ def resumen_cuenta(dni: str) -> dict:
     else:
         estado = "AL_DIA"
 
-    return {
+    resultado = {
         "dni": dni,
         "nombres": socio.get("nombres", "Socio"),
         "apellidos": socio.get("apellidos", "CrediActiva"),
@@ -77,50 +96,95 @@ def resumen_cuenta(dni: str) -> dict:
         "estado_cuenta": estado,
         "actualizado_en": datetime.now(timezone.utc).isoformat(),
     }
-
-
-@app.get("/api/v1/portal/{dni}/creditos")
-def mis_creditos(dni: str) -> list[dict]:
-    _validar_dni(dni)
-    solicitudes = _fetch_solicitudes(dni)
-    aportes = _fetch_aportaciones(dni)
-    resultado = []
-
-    for s in solicitudes:
-        aportes_credito = [a for a in aportes if a["id_solicitud"] == s["id_solicitud"]]
-        pagadas = sum(1 for a in aportes_credito if a["estado"] == "PAGADO")
-        saldo = round(sum(a["monto_cuota"] for a in aportes_credito if a["estado"] != "PAGADO"), 2)
-        cronograma = s.get("cronograma", [])
-        cuota = cronograma[0]["cuota"] if cronograma else 0
-
-        resultado.append(
-            {
-                "id_solicitud": s["id_solicitud"],
-                "tipo_credito": s.get("tipo_credito", "Emprendedor"),
-                "monto": s.get("monto", 0),
-                "plazo_meses": s.get("plazo_meses", 0),
-                "estado_evaluacion": s.get("estado_evaluacion", "PENDIENTE"),
-                "estado_preaprobacion": s.get("estado", "EN_REVISION"),
-                "cuota_mensual": cuota,
-                "saldo_pendiente": saldo,
-                "cuotas_pagadas": pagadas,
-                "fecha_registro": s.get("fecha_registro"),
-                "cronograma": cronograma,
-            }
-        )
+    cache_set(cache_key, resultado)
     return resultado
 
 
-@app.get("/api/v1/portal/{dni}/aportaciones")
-def historial_aportes(dni: str) -> list[dict]:
+@app.get("/api/v1/portal/{dni}/creditos")
+def mis_creditos(dni: str, refrescar: bool = Query(default=False)) -> list[dict]:
     _validar_dni(dni)
-    solicitudes = {s["id_solicitud"]: s.get("tipo_credito", "") for s in _fetch_solicitudes(dni)}
-    items = sorted(
-        _fetch_aportaciones(dni),
-        key=lambda x: (x["fecha_vencimiento"], x["numero_cuota"]),
-        reverse=True,
-    )
-    return [{**a, "tipo_credito": solicitudes.get(a["id_solicitud"], "")} for a in items]
+    if refrescar:
+        cache_invalidate_dni(dni)
+
+    cache_key = f"creditos:{dni}"
+    if not refrescar:
+        cached = cache_get(cache_key)
+        if cached is not None:
+            return cached  # type: ignore[return-value]
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        fut_solicitudes = pool.submit(_fetch_solicitudes, dni, False)
+        fut_aportes = pool.submit(_fetch_aportaciones, dni, False)
+        solicitudes = fut_solicitudes.result()
+        aportes = fut_aportes.result()
+    resultado = [_map_credito_socio(s, aportes) for s in solicitudes]
+    cache_set(cache_key, resultado)
+    return resultado
+
+
+@app.get("/api/v1/portal/{dni}/creditos/{id_solicitud}")
+def detalle_credito(
+    dni: str,
+    id_solicitud: str,
+    refrescar: bool = Query(default=False),
+) -> dict:
+    _validar_dni(dni)
+    if refrescar:
+        cache_invalidate_dni(dni)
+
+    cache_key = f"credito:{dni}:{id_solicitud}"
+    if not refrescar:
+        cached = cache_get(cache_key)
+        if cached is not None:
+            return cached  # type: ignore[return-value]
+
+    solicitud = _fetch_solicitud(id_solicitud, dni)
+    if not solicitud:
+        raise HTTPException(status_code=404, detail="Crédito no encontrado.")
+    aportes = _fetch_aportaciones(dni, False)
+    resultado = _map_credito_socio(solicitud, aportes)
+    cache_set(cache_key, resultado)
+    return resultado
+
+
+_ESTADOS_APORTE = frozenset({"PAGADO", "PENDIENTE", "VENCIDO"})
+
+
+@app.get("/api/v1/portal/{dni}/aportaciones")
+def historial_aportes(
+    dni: str,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=15, ge=10, le=20),
+    estado: str | None = Query(default=None),
+    refrescar: bool = Query(default=False),
+) -> dict:
+    _validar_dni(dni)
+    if refrescar:
+        cache_invalidate_dni(dni)
+
+    estado_filtro = estado.upper() if estado else None
+    if estado_filtro and estado_filtro not in _ESTADOS_APORTE:
+        raise HTTPException(status_code=400, detail="Estado de cuota inválido.")
+
+    items = _get_historial_aportes(dni, refrescar=refrescar)
+    if estado_filtro:
+        items = [a for a in items if a.get("estado") == estado_filtro]
+
+    total = len(items)
+    total_pages = ceil(total / page_size) if total else 0
+    if total_pages and page > total_pages:
+        page = total_pages
+
+    inicio = (page - 1) * page_size
+    pagina = items[inicio : inicio + page_size]
+
+    return {
+        "items": pagina,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+    }
 
 
 @app.get("/api/v1/admin/dashboard")
@@ -221,7 +285,7 @@ def _validar_dni(dni: str) -> None:
 
 def _fetch_socio(dni: str) -> dict:
     try:
-        with httpx.Client(timeout=5.0) as client:
+        with httpx.Client(timeout=_HTTP_TIMEOUT) as client:
             resp = client.get(f"{AUTH_SERVICE_URL}/internal/socios/{dni}")
             if resp.status_code == 200:
                 return resp.json()
@@ -232,7 +296,7 @@ def _fetch_socio(dni: str) -> dict:
 
 def _fetch_socios() -> list[dict]:
     try:
-        with httpx.Client(timeout=5.0) as client:
+        with httpx.Client(timeout=_HTTP_TIMEOUT) as client:
             resp = client.get(f"{AUTH_SERVICE_URL}/internal/socios")
             if resp.status_code == 200:
                 return resp.json()
@@ -241,24 +305,83 @@ def _fetch_socios() -> list[dict]:
     return []
 
 
-def _fetch_solicitudes(dni: str | None = None) -> list[dict]:
-    with httpx.Client(timeout=5.0) as client:
-        params = {"dni": dni} if dni else None
+def _fetch_solicitudes(dni: str | None = None, incluir_cronograma: bool = True) -> list[dict]:
+    with httpx.Client(timeout=_HTTP_TIMEOUT) as client:
+        params: dict[str, str | bool] = {"incluir_cronograma": incluir_cronograma}
+        if dni:
+            params["dni"] = dni
         resp = client.get(f"{CREDIT_SERVICE_URL}/internal/solicitudes", params=params)
         resp.raise_for_status()
         return resp.json()
 
 
-def _fetch_aportaciones(dni: str | None = None) -> list[dict]:
-    with httpx.Client(timeout=5.0) as client:
-        params = {"dni": dni} if dni else None
+def _fetch_solicitud(id_solicitud: str, dni: str) -> dict | None:
+    with httpx.Client(timeout=_HTTP_TIMEOUT) as client:
+        resp = client.get(
+            f"{CREDIT_SERVICE_URL}/internal/solicitudes/{id_solicitud}",
+            params={"dni": dni},
+        )
+        if resp.status_code == 404:
+            return None
+        resp.raise_for_status()
+        return resp.json()
+
+
+def _fetch_aportaciones(dni: str | None = None, enriquecer: bool = True) -> list[dict]:
+    with httpx.Client(timeout=_HTTP_TIMEOUT) as client:
+        params: dict[str, str | bool] = {"enriquecer": enriquecer}
+        if dni:
+            params["dni"] = dni
         resp = client.get(f"{PAYMENT_SERVICE_URL}/internal/aportaciones", params=params)
         resp.raise_for_status()
         return resp.json()
 
 
 def _fetch_resumen_aportaciones() -> dict:
-    with httpx.Client(timeout=5.0) as client:
+    with httpx.Client(timeout=_HTTP_TIMEOUT) as client:
         resp = client.get(f"{PAYMENT_SERVICE_URL}/internal/aportaciones/resumen")
         resp.raise_for_status()
         return resp.json()
+
+
+def _map_credito_socio(s: dict, aportes: list[dict]) -> dict:
+    aportes_credito = [a for a in aportes if a["id_solicitud"] == s["id_solicitud"]]
+    pagadas = sum(1 for a in aportes_credito if a["estado"] == "PAGADO")
+    saldo = round(sum(a["monto_cuota"] for a in aportes_credito if a["estado"] != "PAGADO"), 2)
+    cronograma = s.get("cronograma", [])
+    auditoria = s.get("auditoria", {})
+    cuota = cronograma[0]["cuota"] if cronograma else auditoria.get("cuota_mensual", 0)
+
+    return {
+        "id_solicitud": s["id_solicitud"],
+        "tipo_credito": s.get("tipo_credito", "Emprendedor"),
+        "monto": s.get("monto", 0),
+        "plazo_meses": s.get("plazo_meses", 0),
+        "estado_evaluacion": s.get("estado_evaluacion", "PENDIENTE"),
+        "estado_preaprobacion": s.get("estado", "EN_REVISION"),
+        "cuota_mensual": cuota,
+        "saldo_pendiente": saldo,
+        "cuotas_pagadas": pagadas,
+        "fecha_registro": s.get("fecha_registro"),
+        "cronograma": cronograma,
+    }
+
+
+def _get_historial_aportes(dni: str, *, refrescar: bool = False) -> list[dict]:
+    cache_key = f"aportes_data:{dni}"
+    if not refrescar:
+        cached = cache_get(cache_key)
+        if cached is not None:
+            return cached  # type: ignore[return-value]
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        fut_solicitudes = pool.submit(_fetch_solicitudes, dni, False)
+        fut_aportes = pool.submit(_fetch_aportaciones, dni, False)
+        solicitudes = {s["id_solicitud"]: s.get("tipo_credito", "") for s in fut_solicitudes.result()}
+        items = sorted(
+            fut_aportes.result(),
+            key=lambda x: (x["numero_cuota"], x["fecha_vencimiento"]),
+        )
+    resultado = [{**a, "tipo_credito": solicitudes.get(a["id_solicitud"], "")} for a in items]
+    cache_set(cache_key, resultado)
+    return resultado
