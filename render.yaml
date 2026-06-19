@@ -27,7 +27,6 @@ services:
   - type: web
     name: crediactiva-web
     runtime: static
-    plan: free
     buildCommand: >-
       npm ci &&
       node scripts/set-api-url.js &&
