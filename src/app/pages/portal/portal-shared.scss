@@ -230,3 +230,357 @@
     color: #991b1b;
   }
 }
+
+.portal-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.portal-filtros__btn {
+  border: 2px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.45rem 1.1rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+  }
+
+  &--activo {
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 40, 85, 0.12);
+  }
+
+  &--activo.portal-filtros__btn--todos {
+    background: #002855;
+    border-color: #002855;
+  }
+
+  &--activo.portal-filtros__btn--pagado {
+    background: #00703c;
+    border-color: #00703c;
+  }
+
+  &--activo.portal-filtros__btn--pendiente {
+    background: #2563eb;
+    border-color: #2563eb;
+  }
+
+  &--activo.portal-filtros__btn--vencido {
+    background: #dc3545;
+    border-color: #dc3545;
+  }
+}
+
+.portal-contactos__hero {
+  background: linear-gradient(135deg, #002855 0%, #004080 45%, #00703c 100%);
+  color: #fff;
+  overflow: hidden;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .h1,
+  .h2,
+  .h3,
+  .h4,
+  .h5,
+  .h6 {
+    color: #fff;
+  }
+}
+
+.portal-contactos__hero-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: space-between;
+  padding: 1.75rem 1.5rem;
+}
+
+.portal-contactos__hero-text {
+  flex: 1 1 320px;
+  max-width: 640px;
+}
+
+.portal-contactos__badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  margin-bottom: 0.85rem;
+}
+
+.portal-contactos__slogan {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #bbf7d0;
+}
+
+.portal-contactos__mision {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.portal-contactos__hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-content: flex-start;
+}
+
+.portal-contactos__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 140px;
+  padding: 0.85rem 1rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+
+  i {
+    font-size: 1.25rem;
+    color: #86efac;
+  }
+
+  small {
+    display: block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  strong {
+    font-size: 0.95rem;
+  }
+}
+
+.portal-contactos__canal {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 40, 85, 0.12) !important;
+  }
+
+  .card-body {
+    padding: 1.25rem;
+  }
+
+  h3 {
+    color: #002855;
+    font-weight: 700;
+  }
+
+  p {
+    color: #00703c;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+}
+
+.portal-contactos__canal-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #ecfdf5, #dbeafe);
+  color: #002855;
+  margin-bottom: 0.85rem;
+
+  i {
+    font-size: 1.15rem;
+  }
+}
+
+.portal-contactos__oficina {
+  padding: 1.25rem 1.35rem;
+  border-bottom: 1px solid #e2e8f0;
+
+  &--last {
+    border-bottom: none;
+  }
+
+  h3 {
+    color: #002855;
+    font-weight: 700;
+  }
+}
+
+.portal-contactos__oficina-lista li {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin-bottom: 0.55rem;
+  color: #475569;
+  font-size: 0.92rem;
+
+  i {
+    color: #00703c;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.portal-contactos__mapa-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem;
+  border-radius: 0.85rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+  border: 1px dashed #94a3b8;
+
+  i {
+    font-size: 2rem;
+    color: #002855;
+  }
+
+  strong {
+    display: block;
+    color: #002855;
+    margin-bottom: 0.15rem;
+  }
+
+  p {
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+}
+
+.portal-contactos__area {
+  padding: 1rem 1.1rem;
+  border-radius: 0.85rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.portal-contactos__area-head {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.portal-contactos__area-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 0.65rem;
+  background: #002855;
+  color: #fff;
+  flex-shrink: 0;
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+.portal-contactos__area-desc {
+  font-size: 0.86rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.portal-contactos__area-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+
+  a {
+    color: #00703c;
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  span {
+    color: #475569;
+  }
+
+  i {
+    margin-right: 0.35rem;
+    color: #002855;
+  }
+}
+
+.portal-contactos__redes-lista li {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f1f5f9;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  > i {
+    font-size: 1.35rem;
+    color: #002855;
+    width: 1.5rem;
+    text-align: center;
+  }
+
+  strong {
+    display: block;
+    font-size: 0.88rem;
+    color: #0f172a;
+  }
+
+  span {
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+}
+
+.portal-contactos__aviso {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  background: #fff !important;
+
+  i {
+    font-size: 1.25rem;
+    margin-top: 0.1rem;
+  }
+
+  strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #002855;
+  }
+}

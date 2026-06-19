@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { SoloNumerosDirective } from '../../core/directives/solo-numeros.directive';
 import { SolesPipe } from '../../core/pipes/soles.pipe';
 import type { Socio, SocioCreate, SocioUpdate } from '../../core/models/admin.models';
@@ -27,6 +28,7 @@ const SOCIO_VACIO: SocioCreate = {
 })
 export class AdminSociosComponent implements OnInit {
   private readonly admin = inject(AdminService);
+  private readonly router = inject(Router);
 
   readonly cargando = signal(false);
   readonly mensaje = signal<string | null>(null);
@@ -109,6 +111,10 @@ export class AdminSociosComponent implements OnInit {
     this.registrarSocio();
   }
 
+  irAGenerarCredito(dni: string): void {
+    void this.router.navigate(['/admin/generar-credito'], { queryParams: { dni } });
+  }
+
   registrarSocio(): void {
     const datos = this.formulario();
     this.cargando.set(true);
@@ -116,8 +122,16 @@ export class AdminSociosComponent implements OnInit {
       next: () => {
         this.cargando.set(false);
         this.notificar('Socio registrado correctamente.', false);
+        const dniRegistrado = datos.dni;
         this.formulario.set({ ...SOCIO_VACIO });
         this.cargarSocios();
+        if (
+          confirm(
+            '¿Desea generar un crédito para este socio ahora?\n\nSe abrirá Generar crédito con su DNI.',
+          )
+        ) {
+          this.irAGenerarCredito(dniRegistrado);
+        }
       },
       error: (err) => {
         this.cargando.set(false);

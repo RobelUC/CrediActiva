@@ -65,8 +65,15 @@ def create_db_engine(database_url: str) -> Engine:
     if database_url.startswith("sqlite"):
         kwargs["connect_args"] = {"check_same_thread": False}
     elif database_url.startswith("postgresql"):
+        # Pool pequeño: en Render free varios microservicios comparten ~512 MB RAM.
         kwargs["pool_pre_ping"] = True
-        kwargs["connect_args"] = {"connect_timeout": 10}
+        kwargs["pool_size"] = 1
+        kwargs["max_overflow"] = 0
+        kwargs["connect_args"] = {
+            "connect_timeout": 15,
+            # Requerido con el pooler de Supabase (puerto 6543 / PgBouncer).
+            "prepare_threshold": None,
+        }
     return create_engine(database_url, **kwargs)
 
 

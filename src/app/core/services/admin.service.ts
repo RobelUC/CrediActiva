@@ -1,15 +1,17 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, delay, map, of, throwError } from 'rxjs';
+import { Observable, catchError, delay, map, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import type {
   Aportacion,
   AportacionesFiltro,
   AportacionesPaginadas,
+  CrearCreditoAdminRequest,
   DashboardAdmin,
   EvaluarSolicitudRequest,
   ReporteAuditoria,
   ResumenAportaciones,
+  ResumenSolicitudes,
   Socio,
   SocioCreate,
   SocioUpdate,
@@ -117,11 +119,55 @@ export class AdminService {
     return this.http.delete<{ mensaje: string }>(`${API}/socios/${idSocio}/permanente`);
   }
 
-  listarSolicitudes(): Observable<SolicitudAdmin[]> {
+  listarSolicitudes(opciones?: {
+    dni?: string;
+    estado?: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  }): Observable<SolicitudAdmin[]> {
     if (environment.modoSoloFrontend) {
-      return of([...MOCK_SOLICITUDES]).pipe(delay(300));
+      let data = [...MOCK_SOLICITUDES];
+      if (opciones?.estado) {
+        data = data.filter((s) => s.estado_evaluacion === opciones.estado);
+      }
+      if (opciones?.dni) {
+        data = data.filter((s) => s.dni_usuario === opciones.dni);
+      }
+      return of(data).pipe(delay(300));
     }
-    return this.http.get<SolicitudAdmin[]>(`${API}/solicitudes`);
+    const params: Record<string, string> = {};
+    if (opciones?.dni) {
+      params['dni'] = opciones.dni;
+    }
+    if (opciones?.estado) {
+      params['estado'] = opciones.estado;
+    }
+    return this.http.get<SolicitudAdmin[]>(`${API}/solicitudes`, { params });
+  }
+
+  resumenSolicitudes(): Observable<ResumenSolicitudes> {
+    if (environment.modoSoloFrontend) {
+      const conteos = { pendiente: 0, aprobado: 0, rechazado: 0 };
+      for (const s of MOCK_SOLICITUDES) {
+        if (s.estado_evaluacion === 'APROBADO') {
+          conteos.aprobado += 1;
+        } else if (s.estado_evaluacion === 'RECHAZADO') {
+          conteos.rechazado += 1;
+        } else {
+          conteos.pendiente += 1;
+        }
+      }
+      return of(conteos).pipe(delay(200));
+    }
+    return this.http.get<ResumenSolicitudes>(`${API}/solicitudes/resumen`).pipe(
+      catchError(() =>
+        this.obtenerDashboard().pipe(
+          map((d) => ({
+            pendiente: d.solicitudes_pendientes,
+            aprobado: d.solicitudes_aprobadas,
+            rechazado: d.solicitudes_rechazadas,
+          })),
+        ),
+      ),
+    );
   }
 
   obtenerSolicitud(id: string): Observable<SolicitudAdmin> {
@@ -151,6 +197,26 @@ export class AdminService {
       `${API}/solicitudes/${id}/evaluar`,
       body,
     );
+  }
+
+  crearCreditoAdmin(datos: CrearCreditoAdminRequest): Observable<SolicitudAdmin> {
+    if (environment.modoSoloFrontend) {
+      const nueva: SolicitudAdmin = {
+        id_solicitud: 'demo-admin-' + Date.now(),
+        dni_usuario: datos.dni_usuario,
+        monto: datos.monto,
+        plazo_meses: datos.plazo_meses,
+        tipo_credito: datos.tipo_credito,
+        estado_preaprobacion: 'APROBADO_PRELIMINAR',
+        estado_evaluacion: 'APROBADO',
+        fecha_registro: new Date().toISOString(),
+        observaciones:
+          datos.observaciones ?? 'Crédito generado desde panel administrativo (demo).',
+        cronograma: [],
+      };
+      return of(nueva).pipe(delay(500));
+    }
+    return this.http.post<SolicitudAdmin>(`${API}/solicitudes`, datos);
   }
 
   listarAportaciones(filtro: AportacionesFiltro = {}): Observable<AportacionesPaginadas> {

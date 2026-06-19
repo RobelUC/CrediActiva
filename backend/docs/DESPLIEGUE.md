@@ -114,7 +114,7 @@ Tras cambiar `API_URL`, haz **Manual Deploy** del frontend para recompilar Angul
 
 ## Notas importantes
 
-- **Plan free de Render:** el servicio se “duerme” tras ~15 min sin uso. La primera carga puede tardar **30–60 s** (cold start).
+- **Plan free de Render:** el API se “duerme” tras ~15 min sin uso. La primera carga puede tardar **30–60 s** (cold start). El frontend estático no lleva `plan` en `render.yaml` (los static sites son gratis por defecto).
 - **HTTPS:** Render incluye certificado SSL automático.
 - **Microservicios:** en producción corren **dentro de un solo contenedor Docker** (`backend/Dockerfile` + `start-all.sh`); el gateway sigue siendo el único punto de entrada público.
 - **Local sigue igual:** `npm start` + `backend/start-all.ps1` con `environment.ts` en localhost.

@@ -8,6 +8,7 @@ import { AdminLayoutComponent } from './pages/admin/admin-layout.component';
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard.component';
 import { AdminSociosComponent } from './pages/admin/admin-socios.component';
 import { AdminPrestamosComponent } from './pages/admin/admin-prestamos.component';
+import { AdminGenerarCreditoComponent } from './pages/admin/admin-generar-credito.component';
 import { AdminAportacionesComponent } from './pages/admin/admin-aportaciones.component';
 import { AdminReportesComponent } from './pages/admin/admin-reportes.component';
 import { adminGuard } from './core/guards/admin.guard';
@@ -16,6 +17,7 @@ import { PortalResumenComponent } from './pages/portal/portal-resumen.component'
 import { PortalCreditosComponent } from './pages/portal/portal-creditos.component';
 import { PortalAportesComponent } from './pages/portal/portal-aportes.component';
 import { PortalPerfilComponent } from './pages/portal/portal-perfil.component';
+import { PortalContactosComponent } from './pages/portal/portal-contactos.component';
 import { socioGuard } from './core/guards/socio.guard';
 import { simuladorGuard } from './core/guards/simulador.guard';
 
@@ -44,6 +46,7 @@ export const routes: Routes = [
       { path: '', component: PortalResumenComponent },
       { path: 'creditos', component: PortalCreditosComponent },
       { path: 'aportes', component: PortalAportesComponent },
+      { path: 'contactos', component: PortalContactosComponent },
       { path: 'perfil', component: PortalPerfilComponent },
     ],
   },
@@ -54,6 +57,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: AdminDashboardComponent },
       { path: 'socios', component: AdminSociosComponent },
+      { path: 'generar-credito', component: AdminGenerarCreditoComponent },
       { path: 'prestamos', component: AdminPrestamosComponent },
       { path: 'aportaciones', component: AdminAportacionesComponent },
       { path: 'reportes', component: AdminReportesComponent },

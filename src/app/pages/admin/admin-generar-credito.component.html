@@ -1,0 +1,187 @@
+<div class="admin-page container-fluid py-4">
+  <header class="admin-page__header mb-4">
+    <h1 class="h3 mb-1">Generar crédito</h1>
+    <p class="text-muted mb-0">
+      Busque un socio por DNI, simule el préstamo y genere el crédito con aprobación automática.
+    </p>
+  </header>
+
+  @if (mensaje()) {
+    <div class="alert" [class.alert-success]="!esError()" [class.alert-danger]="esError()">
+      {{ mensaje() }}
+    </div>
+  }
+
+  <div class="card admin-card shadow-sm mb-4">
+    <div class="card-header admin-card__header">Buscar socio por DNI</div>
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-8 col-lg-6">
+          <label class="form-label" for="buscar-dni">DNI del socio</label>
+          <input
+            id="buscar-dni"
+            class="form-control"
+            maxlength="8"
+            inputmode="numeric"
+            placeholder="Ingrese DNI (8 dígitos)"
+            [value]="busquedaDni()"
+            (input)="actualizarBusquedaDni($any($event.target).value)"
+            (keydown.enter)="$event.preventDefault(); buscarSocioPorDni()"
+          />
+        </div>
+        <div class="col-md-4 col-lg-3 d-grid">
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="buscando() || busquedaDni().length < 1"
+            (click)="buscarSocioPorDni()"
+          >
+            @if (buscando()) {
+              Buscando…
+            } @else {
+              Buscar
+            }
+          </button>
+        </div>
+      </div>
+
+      @if (resultadosBusqueda().length > 0) {
+        <div class="admin-busqueda-socio mt-3">
+          <p class="small text-muted mb-2">Seleccione un socio de los resultados:</p>
+          <div class="list-group">
+            @for (socio of resultadosBusqueda(); track socio.id_socio) {
+              <button
+                type="button"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                (click)="seleccionarSocio(socio)"
+              >
+                <span>
+                  <strong>DNI {{ socio.dni }}</strong> — {{ socio.nombres }} {{ socio.apellidos }}
+                </span>
+                @if (socio.activo) {
+                  <span class="badge bg-success">Activo</span>
+                } @else {
+                  <span class="badge bg-secondary">Inactivo</span>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      } @else if (busquedaRealizada() && !buscando()) {
+        <div class="alert alert-warning mt-3 mb-0">
+          No se encontró ningún socio con ese DNI.
+          <a routerLink="/admin/socios" class="alert-link">Registrar socio</a>
+        </div>
+      }
+
+      @if (socioSeleccionado(); as socio) {
+        <div class="admin-socio-seleccionado mt-3">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+            <div>
+              <span class="badge bg-success mb-2">Socio seleccionado</span>
+              <p class="mb-1"><strong>{{ socio.nombres }} {{ socio.apellidos }}</strong></p>
+              <p class="text-muted small mb-0">
+                DNI {{ socio.dni }} · {{ socio.email }} · {{ socio.telefono }}
+              </p>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="limpiarSeleccion()">
+              Cambiar socio
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="card admin-card shadow-sm">
+    <div class="card-header admin-card__header">Datos del crédito</div>
+    <div class="card-body">
+      <p class="text-muted small mb-3">
+        Se crea la solicitud, se aprueba automáticamente y se generan el cronograma y las cuotas
+        en aportaciones (igual que el simulador del portal del socio).
+      </p>
+
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label" for="admin-credito-monto">Monto (S/.)</label>
+          <input
+            id="admin-credito-monto"
+            type="number"
+            class="form-control"
+            min="1000"
+            step="100"
+            [disabled]="!socioSeleccionado()"
+            [value]="montoCredito()"
+            (input)="actualizarMontoCredito($any($event.target).value)"
+          />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="admin-credito-plazo">Plazo (meses)</label>
+          <select
+            id="admin-credito-plazo"
+            class="form-select"
+            [disabled]="!socioSeleccionado()"
+            [value]="plazoCredito()"
+            (change)="actualizarPlazoCredito($any($event.target).value)"
+          >
+            @for (p of plazosDisponibles; track p) {
+              <option [value]="p">{{ p }} meses</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="admin-credito-tipo">Tipo de crédito</label>
+          <select
+            id="admin-credito-tipo"
+            class="form-select"
+            [disabled]="!socioSeleccionado()"
+            [value]="tipoCredito()"
+            (change)="actualizarTipoCredito($any($event.target).value)"
+          >
+            @for (tipo of tiposCredito; track tipo) {
+              <option [value]="tipo">{{ tipo }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="admin-credito-obs">Observaciones (opcional)</label>
+          <input
+            id="admin-credito-obs"
+            class="form-control"
+            placeholder="Ej. Crédito otorgado en ventanilla"
+            [disabled]="!socioSeleccionado()"
+            [value]="observacionesCredito()"
+            (input)="observacionesCredito.set($any($event.target).value)"
+          />
+        </div>
+        <div class="col-md-8">
+          <div class="admin-prestamos__resumen-credito">
+            <span><strong>TEA:</strong> {{ teaCreditoFormateada() }}</span>
+            <span><strong>Cuota estimada:</strong> {{ cuotaCreditoFormateada() }}</span>
+            <span class="text-muted">Mínimo S/. {{ MONTO_MINIMO | number : '1.0-0' }}</span>
+          </div>
+        </div>
+        <div class="col-md-4 d-grid">
+          <button
+            type="button"
+            class="btn btn-success"
+            [disabled]="!formularioCreditoValido() || generandoCredito()"
+            (click)="generarCreditoAdmin()"
+          >
+            @if (generandoCredito()) {
+              Generando crédito…
+            } @else {
+              Generar y aprobar crédito
+            }
+          </button>
+        </div>
+      </div>
+
+      @if (!socioSeleccionado()) {
+        <p class="text-muted small mt-3 mb-0">
+          Primero busque y seleccione un socio para habilitar el formulario de crédito.
+        </p>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,172 @@
+<div class="portal-page container-fluid py-4">
+  <header class="portal-page__header mb-4">
+    <h1 class="h3 mb-1">Contactos</h1>
+    <p class="text-muted mb-0">Canales de atención y datos de la cooperativa</p>
+  </header>
+
+  <section class="portal-contactos__hero card border-0 shadow-sm mb-4">
+    <div class="portal-contactos__hero-body">
+      <div class="portal-contactos__hero-text">
+        <span class="portal-contactos__badge">Información institucional</span>
+        <h2 class="h4 mb-2">{{ empresa.nombre }}</h2>
+        <p class="portal-contactos__slogan mb-3">{{ empresa.slogan }}</p>
+        <p class="portal-contactos__mision mb-0">{{ empresa.mision }}</p>
+      </div>
+      <div class="portal-contactos__hero-meta">
+        <div class="portal-contactos__meta-item">
+          <i class="bi bi-building"></i>
+          <div>
+            <small>RUC</small>
+            <strong>{{ empresa.ruc }}</strong>
+          </div>
+        </div>
+        <div class="portal-contactos__meta-item">
+          <i class="bi bi-clock-history"></i>
+          <div>
+            <small>Atención</small>
+            <strong>Lun–Sáb</strong>
+          </div>
+        </div>
+        <div class="portal-contactos__meta-item">
+          <i class="bi bi-geo-alt-fill"></i>
+          <div>
+            <small>Sede</small>
+            <strong>Lima, Perú</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="row g-4 mb-4">
+    @for (canal of canalesPrincipales; track canal.titulo) {
+      <div class="col-sm-6 col-xl-3">
+        <a
+          class="portal-contactos__canal card h-100 border-0 shadow-sm text-decoration-none"
+          [href]="enlaceExterno(canal)"
+          [attr.target]="esExterno(canal) ? '_blank' : null"
+          [attr.rel]="esExterno(canal) ? 'noopener noreferrer' : null"
+        >
+          <div class="card-body">
+            <span class="portal-contactos__canal-icon">
+              <i class="bi {{ canal.icono }}"></i>
+            </span>
+            <h3 class="h6 mb-1">{{ canal.titulo }}</h3>
+            <p class="mb-0">{{ canal.detalle }}</p>
+          </div>
+        </a>
+      </div>
+    }
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card portal-card shadow-sm mb-4">
+        <div class="card-header portal-card__header d-flex align-items-center gap-2">
+          <i class="bi bi-pin-map-fill"></i>
+          Nuestras oficinas
+        </div>
+        <div class="card-body p-0">
+          @for (oficina of oficinas; track oficina.nombre; let last = $last) {
+            <article class="portal-contactos__oficina" [class.portal-contactos__oficina--last]="last">
+              <h3 class="h6 mb-2">{{ oficina.nombre }}</h3>
+              <ul class="list-unstyled mb-0 portal-contactos__oficina-lista">
+                <li>
+                  <i class="bi bi-geo-alt"></i>
+                  <span>{{ oficina.direccion }}</span>
+                </li>
+                <li>
+                  <i class="bi bi-signpost-split"></i>
+                  <span>{{ oficina.referencia }}</span>
+                </li>
+                <li>
+                  <i class="bi bi-clock"></i>
+                  <span>{{ oficina.horario }}</span>
+                </li>
+              </ul>
+            </article>
+          }
+        </div>
+      </div>
+
+      <div class="card portal-card shadow-sm portal-contactos__mapa">
+        <div class="card-body">
+          <div class="portal-contactos__mapa-placeholder">
+            <i class="bi bi-map"></i>
+            <div>
+              <strong>Ubicación referencial</strong>
+              <p class="mb-0">Av. Javier Prado Este 4200, San Borja — Lima</p>
+            </div>
+          </div>
+          <p class="small text-muted mb-0 mt-3">
+            Mapa ilustrativo con fines informativos. Para visitas, confirme horario en central telefónica.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card portal-card shadow-sm mb-4">
+        <div class="card-header portal-card__header d-flex align-items-center gap-2">
+          <i class="bi bi-headset"></i>
+          Áreas de atención
+        </div>
+        <div class="card-body d-flex flex-column gap-3">
+          @for (area of areas; track area.area) {
+            <article class="portal-contactos__area">
+              <div class="portal-contactos__area-head">
+                <span class="portal-contactos__area-icon">
+                  <i class="bi {{ area.icono }}"></i>
+                </span>
+                <div>
+                  <h3 class="h6 mb-0">{{ area.area }}</h3>
+                  <small class="text-muted">{{ area.responsable }}</small>
+                </div>
+              </div>
+              <p class="portal-contactos__area-desc mb-2">{{ area.descripcion }}</p>
+              <div class="portal-contactos__area-links">
+                <a [href]="'mailto:' + area.correo">
+                  <i class="bi bi-envelope"></i> {{ area.correo }}
+                </a>
+                <span>
+                  <i class="bi bi-telephone"></i> {{ area.telefono }}
+                </span>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+
+      <div class="card portal-card shadow-sm portal-contactos__redes">
+        <div class="card-header portal-card__header d-flex align-items-center gap-2">
+          <i class="bi bi-share"></i>
+          Redes sociales
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0 portal-contactos__redes-lista">
+            @for (red of redes; track red.nombre) {
+              <li>
+                <i class="bi {{ red.icono }}"></i>
+                <div>
+                  <strong>{{ red.nombre }}</strong>
+                  <span>{{ red.usuario }}</span>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <div class="portal-contactos__aviso alert alert-light border shadow-sm mb-0">
+        <i class="bi bi-info-circle-fill text-primary"></i>
+        <div>
+          <strong>¿Necesita ayuda urgente?</strong>
+          <p class="mb-0 small">
+            Para bloqueo de acceso o reporte de fraude, llame de inmediato al
+            <a href="tel:+516124500">(01) 612-4500</a> opción 9, disponible 24/7.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

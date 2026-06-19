@@ -93,9 +93,23 @@ export interface SolicitudAdmin {
   cronograma: CuotaCronograma[];
 }
 
+export interface ResumenSolicitudes {
+  pendiente: number;
+  aprobado: number;
+  rechazado: number;
+}
+
 export interface EvaluarSolicitudRequest {
   decision: 'APROBADO' | 'RECHAZADO';
   observaciones: string;
+}
+
+export interface CrearCreditoAdminRequest {
+  dni_usuario: string;
+  monto: number;
+  plazo_meses: number;
+  tipo_credito: TipoCredito;
+  observaciones?: string;
 }
 
 export interface Aportacion {
