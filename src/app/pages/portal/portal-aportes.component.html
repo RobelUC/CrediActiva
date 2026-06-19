@@ -9,39 +9,39 @@
     </button>
   </header>
 
-  <div class="btn-group mb-3" role="group">
+  <div class="portal-filtros mb-3" role="group" aria-label="Filtrar aportes por estado">
     <button
       type="button"
-      class="btn btn-sm"
-      [class.btn-primary]="filtro() === 'TODOS'"
-      [class.btn-outline-primary]="filtro() !== 'TODOS'"
+      class="portal-filtros__btn"
+      [class.portal-filtros__btn--activo]="filtro() === 'TODOS'"
+      [class.portal-filtros__btn--todos]="filtro() === 'TODOS'"
       (click)="cambiarFiltro('TODOS')"
     >
       Todos
     </button>
     <button
       type="button"
-      class="btn btn-sm"
-      [class.btn-success]="filtro() === 'PAGADO'"
-      [class.btn-outline-success]="filtro() !== 'PAGADO'"
+      class="portal-filtros__btn"
+      [class.portal-filtros__btn--activo]="filtro() === 'PAGADO'"
+      [class.portal-filtros__btn--pagado]="filtro() === 'PAGADO'"
       (click)="cambiarFiltro('PAGADO')"
     >
       Pagados
     </button>
     <button
       type="button"
-      class="btn btn-sm"
-      [class.btn-primary]="filtro() === 'PENDIENTE'"
-      [class.btn-outline-primary]="filtro() !== 'PENDIENTE'"
+      class="portal-filtros__btn"
+      [class.portal-filtros__btn--activo]="filtro() === 'PENDIENTE'"
+      [class.portal-filtros__btn--pendiente]="filtro() === 'PENDIENTE'"
       (click)="cambiarFiltro('PENDIENTE')"
     >
       Pendientes
     </button>
     <button
       type="button"
-      class="btn btn-sm"
-      [class.btn-danger]="filtro() === 'VENCIDO'"
-      [class.btn-outline-danger]="filtro() !== 'VENCIDO'"
+      class="portal-filtros__btn"
+      [class.portal-filtros__btn--activo]="filtro() === 'VENCIDO'"
+      [class.portal-filtros__btn--vencido]="filtro() === 'VENCIDO'"
       (click)="cambiarFiltro('VENCIDO')"
     >
       Vencidos

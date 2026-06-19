@@ -33,6 +33,7 @@ export class RegisterComponent {
   readonly confirmarPassword = signal('');
   readonly aceptaTerminos = signal(false);
   readonly mostrarPassword = signal(false);
+  readonly mostrarConfirmarPassword = signal(false);
   readonly enviando = signal(false);
   readonly mensaje = signal<string | null>(null);
   readonly esError = signal(false);
@@ -206,5 +207,13 @@ export class RegisterComponent {
     this.confirmarPassword.set(valor);
     this.limpiarMensaje();
   }
+
+  alternarVisibilidadPassword(): void {
+    this.mostrarPassword.update((v) => !v);
+  }
+
+  alternarVisibilidadConfirmar(): void {
+    this.mostrarConfirmarPassword.update((v) => !v);
+  }
 }
-
+

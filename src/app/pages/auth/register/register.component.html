@@ -47,7 +47,6 @@
           [value]="nombres()"
           [readonly]="consultandoDni()"
           autocomplete="given-name"
-          placeholder="Se completa con su DNI"
           (input)="actualizarNombres($any($event.target).value)"
         />
       </div>
@@ -61,7 +60,6 @@
           [value]="apellidos()"
           [readonly]="consultandoDni()"
           autocomplete="family-name"
-          placeholder="Se completa con su DNI"
           (input)="actualizarApellidos($any($event.target).value)"
         />
       </div>
@@ -106,30 +104,59 @@
     <div class="row g-3 mb-3">
       <div class="col-md-6">
         <label class="form-label" for="reg-password">Contraseña</label>
-        <input
-          id="reg-password"
-          [type]="mostrarPassword() ? 'text' : 'password'"
-          class="form-control ca-auth-input"
-          [class.is-invalid]="passwordInvalida()"
-          [value]="password()"
-          autocomplete="new-password"
-          (input)="actualizarPassword($any($event.target).value)"
-        />
+        <div class="input-group">
+          <input
+            id="reg-password"
+            [type]="mostrarPassword() ? 'text' : 'password'"
+            class="form-control ca-auth-input"
+            [class.is-invalid]="passwordInvalida()"
+            [value]="password()"
+            autocomplete="new-password"
+            placeholder="Mínimo 6 caracteres"
+            (input)="actualizarPassword($any($event.target).value)"
+          />
+          <button
+            type="button"
+            class="btn ca-auth-input-toggle"
+            [attr.aria-label]="mostrarPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            [attr.aria-pressed]="mostrarPassword()"
+            (click)="alternarVisibilidadPassword()"
+          >
+            <i class="bi" [class.bi-eye]="!mostrarPassword()" [class.bi-eye-slash]="mostrarPassword()" aria-hidden="true"></i>
+          </button>
+        </div>
         @if (passwordInvalida()) {
           <div class="invalid-feedback d-block">Mínimo 6 caracteres.</div>
         }
       </div>
       <div class="col-md-6">
         <label class="form-label" for="reg-confirm">Confirmar contraseña</label>
-        <input
-          id="reg-confirm"
-          type="password"
-          class="form-control ca-auth-input"
-          [class.is-invalid]="confirmacionInvalida()"
-          [value]="confirmarPassword()"
-          autocomplete="new-password"
-          (input)="actualizarConfirmar($any($event.target).value)"
-        />
+        <div class="input-group">
+          <input
+            id="reg-confirm"
+            [type]="mostrarConfirmarPassword() ? 'text' : 'password'"
+            class="form-control ca-auth-input"
+            [class.is-invalid]="confirmacionInvalida()"
+            [value]="confirmarPassword()"
+            autocomplete="new-password"
+            placeholder="Repita su contraseña"
+            (input)="actualizarConfirmar($any($event.target).value)"
+          />
+          <button
+            type="button"
+            class="btn ca-auth-input-toggle"
+            [attr.aria-label]="mostrarConfirmarPassword() ? 'Ocultar confirmación' : 'Mostrar confirmación'"
+            [attr.aria-pressed]="mostrarConfirmarPassword()"
+            (click)="alternarVisibilidadConfirmar()"
+          >
+            <i
+              class="bi"
+              [class.bi-eye]="!mostrarConfirmarPassword()"
+              [class.bi-eye-slash]="mostrarConfirmarPassword()"
+              aria-hidden="true"
+            ></i>
+          </button>
+        </div>
         @if (confirmacionInvalida()) {
           <div class="invalid-feedback d-block">Las contraseñas no coinciden.</div>
         }

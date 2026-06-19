@@ -14,7 +14,7 @@
     <div class="col-lg-5">
       <div class="card admin-card shadow-sm">
         <div class="card-header admin-card__header">
-          Solicitudes ({{ solicitudes().length }})
+          Solicitudes ({{ solicitudesFiltradas().length }})
         </div>
 
         <div class="admin-prestamos__tabs border-bottom" role="tablist" aria-label="Estado de préstamos">
@@ -32,6 +32,48 @@
             </button>
           }
         </div>
+
+        @if (requiereBusquedaDni()) {
+          <div class="admin-prestamos__busqueda border-bottom p-3">
+            <label class="form-label small mb-1" for="buscar-dni-prestamos">Buscar por DNI</label>
+            <div class="input-group input-group-sm">
+              <input
+                id="buscar-dni-prestamos"
+                type="text"
+                class="form-control"
+                inputmode="numeric"
+                maxlength="8"
+                placeholder="Ej. 74874853"
+                [value]="busquedaDni()"
+                (input)="actualizarBusquedaDni($any($event.target).value)"
+                (keydown.enter)="buscarPorDni()"
+              />
+              <button
+                type="button"
+                class="btn btn-success"
+                [disabled]="buscando() || busquedaDni().length < 8"
+                (click)="buscarPorDni()"
+              >
+                {{ buscando() ? 'Buscando…' : 'Buscar' }}
+              </button>
+              @if (dniBuscado()) {
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  [disabled]="buscando()"
+                  (click)="limpiarBusquedaDni()"
+                >
+                  Limpiar
+                </button>
+              }
+            </div>
+            @if (dniBuscado()) {
+              <p class="small text-muted mb-0 mt-2">
+                Mostrando resultados para DNI <strong>{{ dniBuscado() }}</strong>
+              </p>
+            }
+          </div>
+        }
 
         <div class="list-group list-group-flush admin-list">
           @for (s of solicitudesFiltradas(); track s.id_solicitud) {
@@ -102,13 +144,16 @@
             }
             @if (sel.cronograma.length > 0) {
               <h3 class="h6 mt-4">Cronograma de pagos</h3>
+              <p class="small text-muted mb-2">
+                Mostrando <strong>{{ rangoCronograma() }}</strong> · {{ CRONOGRAMA_PAGE_SIZE }} por página
+              </p>
               <div class="table-responsive">
                 <table class="table table-sm table-striped">
                   <thead>
                     <tr><th>#</th><th>Vence</th><th>Cuota</th><th>Capital</th><th>Interés</th><th>Saldo</th></tr>
                   </thead>
                   <tbody>
-                    @for (c of sel.cronograma; track c.numero_cuota) {
+                    @for (c of cronogramaPaginado(); track c.numero_cuota) {
                       <tr>
                         <td>{{ c.numero_cuota }}</td>
                         <td>{{ c.fecha_vencimiento }}</td>
@@ -121,6 +166,42 @@
                   </tbody>
                 </table>
               </div>
+              @if (totalPaginasCronograma() > 1) {
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
+                  <span class="small text-muted">
+                    Página {{ paginaCronograma() }} de {{ totalPaginasCronograma() }}
+                  </span>
+                  <nav aria-label="Paginación del cronograma">
+                    <ul class="pagination pagination-sm mb-0">
+                      <li class="page-item" [class.disabled]="!hayPaginaAnteriorCronograma()">
+                        <button
+                          type="button"
+                          class="page-link"
+                          (click)="irPaginaCronograma(paginaCronograma() - 1)"
+                        >
+                          Anterior
+                        </button>
+                      </li>
+                      @for (p of paginasCronograma(); track p) {
+                        <li class="page-item" [class.active]="paginaCronograma() === p">
+                          <button type="button" class="page-link" (click)="irPaginaCronograma(p)">
+                            {{ p }}
+                          </button>
+                        </li>
+                      }
+                      <li class="page-item" [class.disabled]="!hayPaginaSiguienteCronograma()">
+                        <button
+                          type="button"
+                          class="page-link"
+                          (click)="irPaginaCronograma(paginaCronograma() + 1)"
+                        >
+                          Siguiente
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              }
             }
           </div>
         </div>

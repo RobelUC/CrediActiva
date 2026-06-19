@@ -203,6 +203,15 @@
                     <div class="btn-group btn-group-sm">
                       <button
                         type="button"
+                        class="btn btn-outline-success"
+                        title="Generar crédito"
+                        [disabled]="cargando()"
+                        (click)="irAGenerarCredito(s.dni)"
+                      >
+                        Crédito
+                      </button>
+                      <button
+                        type="button"
                         class="btn btn-outline-primary"
                         title="Editar"
                         [disabled]="cargando()"

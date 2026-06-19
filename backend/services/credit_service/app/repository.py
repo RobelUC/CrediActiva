@@ -2,6 +2,7 @@ from datetime import date, datetime, timezone
 from typing import Any
 from uuid import uuid4
 
+from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
 from app.database import SessionLocal
@@ -151,7 +152,12 @@ def eliminar_solicitud_socio(id_solicitud: str, dni: str) -> tuple[bool, str]:
         return True, ""
 
 
-def listar_solicitudes(dni: str | None = None, *, incluir_cronograma: bool = True) -> list[dict[str, Any]]:
+def listar_solicitudes(
+    dni: str | None = None,
+    estado: str | None = None,
+    *,
+    incluir_cronograma: bool = True,
+) -> list[dict[str, Any]]:
     with SessionLocal() as db:
         options = [
             joinedload(Solicitud.tipo_credito),
@@ -166,7 +172,26 @@ def listar_solicitudes(dni: str | None = None, *, incluir_cronograma: bool = Tru
         )
         if dni:
             query = query.filter(Solicitud.dni_usuario == dni)
+        if estado:
+            query = query.filter(Solicitud.estado_evaluacion == estado)
         return [_to_dict(s, incluir_cronograma=incluir_cronograma) for s in query.all()]
+
+
+def contar_solicitudes_por_estado() -> dict[str, int]:
+    with SessionLocal() as db:
+        filas = (
+            db.query(Solicitud.estado_evaluacion, func.count(Solicitud.id_solicitud))
+            .group_by(Solicitud.estado_evaluacion)
+            .all()
+        )
+    conteos = {"PENDIENTE": 0, "APROBADO": 0, "RECHAZADO": 0}
+    for estado, cantidad in filas:
+        clave = (estado or "PENDIENTE").strip().upper()
+        if clave in conteos:
+            conteos[clave] = cantidad
+        else:
+            conteos["PENDIENTE"] += cantidad
+    return conteos
 
 
 def obtener_solicitud(id_solicitud: str) -> dict[str, Any] | None:

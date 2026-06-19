@@ -69,14 +69,14 @@
     </div>
 
     @if (mensaje()) {
-      <div
-        class="alert mb-3"
-        [class.alert-success]="!esError()"
-        [class.alert-danger]="esError()"
-        role="status"
+      <p
+        class="ca-auth-card__mensaje mb-3"
+        [class.ca-auth-card__mensaje--error]="esError()"
+        [class.ca-auth-card__mensaje--ok]="!esError()"
+        role="alert"
       >
         {{ mensaje() }}
-      </div>
+      </p>
     }
 
     <button

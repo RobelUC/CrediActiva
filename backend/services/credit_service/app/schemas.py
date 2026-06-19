@@ -63,6 +63,31 @@ class EvaluarSolicitudRequest(BaseModel):
     observaciones: str = Field(default="", max_length=500)
 
 
+class CrearCreditoAdminRequest(BaseModel):
+    """Alta de crédito desde panel admin: crea la solicitud y la aprueba en un solo paso."""
+
+    monto: float = Field(..., ge=1000)
+    plazo_meses: int = Field(..., ge=12, le=48)
+    tipo_credito: TipoCredito
+    dni_usuario: str = Field(..., min_length=8, max_length=8)
+    observaciones: str = Field(
+        default="Crédito generado y aprobado desde el panel administrativo.",
+        max_length=500,
+    )
+
+    @field_validator("dni_usuario")
+    @classmethod
+    def validar_dni_admin(cls, valor: str) -> str:
+        if not _DNI.match(valor):
+            raise ValueError("El DNI debe contener exactamente 8 dígitos numéricos.")
+        return valor
+
+    @field_validator("monto")
+    @classmethod
+    def redondear_monto_admin(cls, valor: float) -> float:
+        return round(valor, 2)
+
+
 class DisponibilidadSolicitudResponse(BaseModel):
     dni_usuario: str
     pendientes: int
@@ -81,3 +106,9 @@ class SolicitudAdminResponse(BaseModel):
     fecha_registro: datetime
     observaciones: str = ""
     cronograma: list[CuotaCronograma] = []
+
+
+class ResumenSolicitudesResponse(BaseModel):
+    pendiente: int
+    aprobado: int
+    rechazado: int

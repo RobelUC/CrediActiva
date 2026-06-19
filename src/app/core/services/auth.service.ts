@@ -112,7 +112,16 @@ export class AuthService {
 
   cerrarSesion(): void {
     this.usuarioActual.set(null);
+    localStorage.removeItem(STORAGE_KEY);
     sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  /** Rehidrata la sesión desde almacenamiento (útil al volver a la landing). */
+  restaurarSesion(): void {
+    const usuario = this.leerSesionAlmacenada();
+    if (usuario) {
+      this.usuarioActual.set(usuario);
+    }
   }
 
   actualizarDatosSesion(
@@ -194,16 +203,26 @@ export class AuthService {
 
   private persistirSesion(usuario: UsuarioSesion): void {
     this.usuarioActual.set(usuario);
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(usuario));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(usuario));
+    sessionStorage.removeItem(STORAGE_KEY);
   }
 
   private cargarSesion(): UsuarioSesion | null {
+    return this.leerSesionAlmacenada();
+  }
+
+  private leerSesionAlmacenada(): UsuarioSesion | null {
     try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
+      const raw =
+        localStorage.getItem(STORAGE_KEY) ?? sessionStorage.getItem(STORAGE_KEY);
       if (!raw) {
         return null;
       }
       const usuario = JSON.parse(raw) as UsuarioSesion;
+      if (localStorage.getItem(STORAGE_KEY) === null) {
+        localStorage.setItem(STORAGE_KEY, raw);
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
       return { ...usuario, rol: usuario.rol ?? 'socio' };
     } catch {
       return null;

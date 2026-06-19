@@ -52,6 +52,24 @@ export class CrediactivaComponent {
   readonly queryParamsSimulador = computed(() =>
     this.puedeUsarSimulador() ? {} : { returnUrl: '/simulador' },
   );
+
+  readonly rutaCuenta = computed(() => {
+    if (!this.auth.sesionActiva()) {
+      return '/login';
+    }
+    return this.auth.esAdministrador() ? '/admin' : '/portal';
+  });
+
+  readonly etiquetaCuenta = computed(() => {
+    if (!this.auth.sesionActiva()) {
+      return 'Iniciar sesión';
+    }
+    if (this.auth.esAdministrador()) {
+      return 'Panel admin';
+    }
+    const nombres = this.auth.usuario()?.nombres?.trim();
+    return nombres ? `Hola, ${nombres.split(' ')[0]}` : 'Mi portal';
+  });
   readonly MONTO_MINIMO = MONTO_MINIMO;
 
   readonly tiposCredito: readonly TipoCredito[] = [

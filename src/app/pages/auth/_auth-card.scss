@@ -64,6 +64,22 @@
   }
 }
 
+.ca-auth-card__mensaje {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+
+  &--error {
+    color: #dc3545;
+    font-weight: 700;
+  }
+
+  &--ok {
+    color: #00703c;
+    font-weight: 600;
+  }
+}
+
 .ca-auth-card__hint code {
   font-size: 0.8em;
   color: #002855;
@@ -88,6 +104,24 @@
   &:hover {
     background: #f0f4f8;
   }
+}
+
+.input-group .ca-auth-input {
+  border-right: 0;
+}
+
+.input-group .ca-auth-input:focus {
+  box-shadow: none;
+}
+
+.input-group:focus-within {
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 0.2rem rgba(0, 112, 60, 0.2);
+}
+
+.input-group:focus-within .ca-auth-input,
+.input-group:focus-within .ca-auth-input-toggle {
+  border-color: #00703c;
 }
 
 .form-label {

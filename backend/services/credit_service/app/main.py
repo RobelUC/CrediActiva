@@ -18,6 +18,7 @@ from app.repository import (
     MAX_SOLICITUDES_PENDIENTES,
     actualizar_solicitud,
     contar_pendientes_por_dni,
+    contar_solicitudes_por_estado,
     eliminar_por_dni,
     eliminar_solicitud_socio,
     guardar_solicitud,
@@ -25,8 +26,11 @@ from app.repository import (
     obtener_solicitud,
 )
 from app.schemas import (
+    CrearCreditoAdminRequest,
     DisponibilidadSolicitudResponse,
+    EstadoEvaluacion,
     EvaluarSolicitudRequest,
+    ResumenSolicitudesResponse,
     SolicitudAdminResponse,
     SolicitudCredito,
     SolicitudCreditoResponse,
@@ -74,15 +78,24 @@ def disponibilidad_solicitud(dni: str) -> DisponibilidadSolicitudResponse:
     status_code=status.HTTP_201_CREATED,
 )
 def crear_solicitud(payload: SolicitudCredito) -> SolicitudCreditoResponse:
-    pendientes = contar_pendientes_por_dni(payload.dni_usuario)
-    if pendientes >= MAX_SOLICITUDES_PENDIENTES:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                f"Ya tiene {pendientes} solicitudes pendientes (máximo {MAX_SOLICITUDES_PENDIENTES}). "
-                "Espere a que una sea aprobada o rechazada, o elimine una solicitud pendiente."
-            ),
-        )
+    return _registrar_solicitud(payload)
+
+
+def _registrar_solicitud(
+    payload: SolicitudCredito,
+    *,
+    omitir_limite_pendientes: bool = False,
+) -> SolicitudCreditoResponse:
+    if not omitir_limite_pendientes:
+        pendientes = contar_pendientes_por_dni(payload.dni_usuario)
+        if pendientes >= MAX_SOLICITUDES_PENDIENTES:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Ya tiene {pendientes} solicitudes pendientes (máximo {MAX_SOLICITUDES_PENDIENTES}). "
+                    "Espere a que una sea aprobada o rechazada, o elimine una solicitud pendiente."
+                ),
+            )
 
     auditoria = calcular_auditoria_credito(payload.monto, payload.plazo_meses, payload.tipo_credito)
     estado = determinar_estado_preaprobacion(payload.monto)
@@ -111,9 +124,55 @@ def crear_solicitud(payload: SolicitudCredito) -> SolicitudCreditoResponse:
     return respuesta
 
 
+@app.post(
+    "/api/v1/admin/solicitudes",
+    response_model=SolicitudAdminResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def crear_credito_admin(payload: CrearCreditoAdminRequest) -> SolicitudAdminResponse:
+    """Crea una solicitud y la aprueba automáticamente (cronograma + cuotas en payment-service)."""
+    _verificar_socio_existe(payload.dni_usuario)
+
+    respuesta = _registrar_solicitud(
+        SolicitudCredito(
+            monto=payload.monto,
+            plazo_meses=payload.plazo_meses,
+            tipo_credito=payload.tipo_credito,
+            dni_usuario=payload.dni_usuario,
+        ),
+        omitir_limite_pendientes=True,
+    )
+
+    return _evaluar_solicitud_interna(
+        respuesta.id_solicitud,
+        decision="APROBADO",
+        observaciones=payload.observaciones,
+    )
+
+
+@app.get("/api/v1/admin/solicitudes/resumen", response_model=ResumenSolicitudesResponse)
+def obtener_resumen_solicitudes_admin() -> ResumenSolicitudesResponse:
+    conteos = contar_solicitudes_por_estado()
+    return ResumenSolicitudesResponse(
+        pendiente=conteos["PENDIENTE"],
+        aprobado=conteos["APROBADO"],
+        rechazado=conteos["RECHAZADO"],
+    )
+
+
 @app.get("/api/v1/admin/solicitudes", response_model=list[SolicitudAdminResponse])
-def obtener_solicitudes_admin() -> list[SolicitudAdminResponse]:
-    return [_map_admin(s) for s in listar_solicitudes()]
+def obtener_solicitudes_admin(
+    dni: str | None = Query(default=None, min_length=8, max_length=8),
+    estado: EstadoEvaluacion | None = Query(default=None),
+) -> list[SolicitudAdminResponse]:
+    if dni and not re.fullmatch(r"\d{8}", dni):
+        raise HTTPException(status_code=422, detail="El DNI debe contener exactamente 8 dígitos.")
+    solicitudes = listar_solicitudes(
+        dni=dni,
+        estado=estado,
+        incluir_cronograma=False,
+    )
+    return [_map_admin(s) for s in solicitudes]
 
 
 @app.get("/api/v1/admin/solicitudes/{id_solicitud}", response_model=SolicitudAdminResponse)
@@ -126,6 +185,19 @@ def obtener_solicitud_admin(id_solicitud: str) -> SolicitudAdminResponse:
 
 @app.post("/api/v1/admin/solicitudes/{id_solicitud}/evaluar", response_model=SolicitudAdminResponse)
 def evaluar_solicitud(id_solicitud: str, payload: EvaluarSolicitudRequest) -> SolicitudAdminResponse:
+    return _evaluar_solicitud_interna(
+        id_solicitud,
+        decision=payload.decision,
+        observaciones=payload.observaciones,
+    )
+
+
+def _evaluar_solicitud_interna(
+    id_solicitud: str,
+    *,
+    decision: str,
+    observaciones: str,
+) -> SolicitudAdminResponse:
     solicitud = obtener_solicitud(id_solicitud)
     if not solicitud:
         raise HTTPException(status_code=404, detail="Solicitud no encontrada.")
@@ -133,7 +205,7 @@ def evaluar_solicitud(id_solicitud: str, payload: EvaluarSolicitudRequest) -> So
         raise HTTPException(status_code=400, detail="La solicitud ya fue evaluada.")
 
     cronograma: list[dict] = []
-    if payload.decision == "APROBADO":
+    if decision == "APROBADO":
         cronograma = generar_cronograma(
             solicitud["monto"],
             solicitud["plazo_meses"],
@@ -143,16 +215,38 @@ def evaluar_solicitud(id_solicitud: str, payload: EvaluarSolicitudRequest) -> So
     actualizada = actualizar_solicitud(
         id_solicitud,
         {
-            "estado_evaluacion": payload.decision,
-            "observaciones": payload.observaciones,
+            "estado_evaluacion": decision,
+            "observaciones": observaciones,
             "cronograma": cronograma,
         },
     )
 
-    if payload.decision == "APROBADO" and actualizada:
+    if decision == "APROBADO" and actualizada:
         _crear_aportaciones(actualizada)
 
     return _map_admin(actualizada)  # type: ignore[arg-type]
+
+
+def _verificar_socio_existe(dni: str) -> None:
+    try:
+        with httpx.Client(timeout=8.0) as client:
+            resp = client.get(f"{AUTH_SERVICE_URL}/internal/socios/{dni}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="No se pudo verificar el socio en auth-service.",
+        ) from exc
+
+    if resp.status_code == 404:
+        raise HTTPException(
+            status_code=404,
+            detail="El socio no está registrado. Créelo primero en Gestión de socios.",
+        )
+    if resp.status_code >= 400:
+        raise HTTPException(
+            status_code=502,
+            detail="No se pudo verificar el socio.",
+        )
 
 
 @app.delete("/api/v1/solicitudes/{id_solicitud}", status_code=status.HTTP_200_OK)
