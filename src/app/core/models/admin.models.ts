@@ -119,3 +119,17 @@ export interface ResumenAportaciones {
   monto_pendiente: number;
   actualizado_en: string;
 }
+
+export interface AportacionesPaginadas {
+  items: Aportacion[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface AportacionesFiltro {
+  dni?: string;
+  page?: number;
+  page_size?: number;
+}

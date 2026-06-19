@@ -4,18 +4,18 @@
       <h1 class="h3 mb-1">Historial de aportes</h1>
       <p class="text-muted mb-0">Cuotas y pagos de sus créditos CrediActiva</p>
     </div>
-    <button type="button" class="btn btn-sm btn-outline-primary" (click)="cargar()">
+    <button type="button" class="btn btn-sm btn-outline-primary" (click)="cargar(true)">
       <i class="bi bi-arrow-clockwise"></i> Actualizar
     </button>
   </header>
 
-  <div class="btn-group mb-4" role="group">
+  <div class="btn-group mb-3" role="group">
     <button
       type="button"
       class="btn btn-sm"
       [class.btn-primary]="filtro() === 'TODOS'"
       [class.btn-outline-primary]="filtro() !== 'TODOS'"
-      (click)="filtro.set('TODOS')"
+      (click)="cambiarFiltro('TODOS')"
     >
       Todos
     </button>
@@ -24,7 +24,7 @@
       class="btn btn-sm"
       [class.btn-success]="filtro() === 'PAGADO'"
       [class.btn-outline-success]="filtro() !== 'PAGADO'"
-      (click)="filtro.set('PAGADO')"
+      (click)="cambiarFiltro('PAGADO')"
     >
       Pagados
     </button>
@@ -33,7 +33,7 @@
       class="btn btn-sm"
       [class.btn-primary]="filtro() === 'PENDIENTE'"
       [class.btn-outline-primary]="filtro() !== 'PENDIENTE'"
-      (click)="filtro.set('PENDIENTE')"
+      (click)="cambiarFiltro('PENDIENTE')"
     >
       Pendientes
     </button>
@@ -42,11 +42,15 @@
       class="btn btn-sm"
       [class.btn-danger]="filtro() === 'VENCIDO'"
       [class.btn-outline-danger]="filtro() !== 'VENCIDO'"
-      (click)="filtro.set('VENCIDO')"
+      (click)="cambiarFiltro('VENCIDO')"
     >
       Vencidos
     </button>
   </div>
+
+  <p class="small text-muted mb-3">
+    Mostrando <strong>{{ rangoRegistros() }}</strong> · {{ PAGE_SIZE }} por página
+  </p>
 
   <div class="card portal-card shadow-sm">
     <div class="table-responsive">
@@ -62,26 +66,59 @@
           </tr>
         </thead>
         <tbody>
-          @for (a of aportesFiltrados(); track a.id_aportacion) {
+          @if (cargando()) {
             <tr>
-              <td>N.° {{ a.numero_cuota }}</td>
-              <td>{{ a.tipo_credito || '—' }}</td>
-              <td>{{ a.monto_cuota | soles : '1.2-2' }}</td>
-              <td>{{ a.fecha_vencimiento }}</td>
-              <td>{{ a.fecha_pago ?? '—' }}</td>
-              <td>
-                <span class="badge bg-{{ badge(a.estado) }}">{{ a.estado }}</span>
-              </td>
+              <td colspan="6" class="text-center text-muted py-5">Cargando historial…</td>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="6" class="text-center text-muted py-5">
-                No hay aportes registrados para este filtro
-              </td>
-            </tr>
+          } @else {
+            @for (a of aportes(); track a.id_aportacion) {
+              <tr>
+                <td>N.° {{ a.numero_cuota }}</td>
+                <td>{{ a.tipo_credito || '—' }}</td>
+                <td>{{ a.monto_cuota | soles : '1.2-2' }}</td>
+                <td>{{ a.fecha_vencimiento }}</td>
+                <td>{{ a.fecha_pago ?? '—' }}</td>
+                <td>
+                  <span class="badge bg-{{ badge(a.estado) }}">{{ a.estado }}</span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center text-muted py-5">
+                  No hay aportes registrados para este filtro
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
     </div>
+
+    @if (totalPaginas() > 1) {
+      <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span class="small text-muted">Página {{ paginaActual() }} de {{ totalPaginas() }}</span>
+        <nav aria-label="Paginación de aportes">
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="!hayPaginaAnterior()">
+              <button type="button" class="page-link" (click)="irPagina(paginaActual() - 1)">
+                Anterior
+              </button>
+            </li>
+            @for (p of paginas(); track p) {
+              <li class="page-item" [class.active]="paginaActual() === p">
+                <button type="button" class="page-link" (click)="irPagina(p)">
+                  {{ p }}
+                </button>
+              </li>
+            }
+            <li class="page-item" [class.disabled]="!hayPaginaSiguiente()">
+              <button type="button" class="page-link" (click)="irPagina(paginaActual() + 1)">
+                Siguiente
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    }
   </div>
 </div>

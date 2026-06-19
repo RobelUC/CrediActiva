@@ -15,9 +15,12 @@ app = FastAPI(
     version="2.0.0",
 )
 
+_cors_raw = os.getenv("CORS_ORIGINS", "http://localhost:4200")
+CORS_ORIGINS = [origin.strip() for origin in _cors_raw.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,7 +30,7 @@ app.add_middleware(
 def _resolver_servicio(path: str, method: str) -> str | None:
     if path.startswith("/api/v1/auth"):
         return AUTH_SERVICE_URL
-    if path == "/api/v1/solicitudes" and method == "POST":
+    if path.startswith("/api/v1/solicitudes"):
         return CREDIT_SERVICE_URL
     if path.startswith("/api/v1/admin/socios"):
         return AUTH_SERVICE_URL

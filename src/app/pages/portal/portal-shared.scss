@@ -58,3 +58,175 @@
   background: #00703c;
   border-color: #00703c;
 }
+
+.portal-creditos__tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f1f5f9;
+}
+
+.portal-creditos__tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.65rem 0.35rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  }
+
+  &--active {
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+    transform: translateY(-1px);
+  }
+}
+
+.portal-creditos__tab-label {
+  line-height: 1.2;
+}
+
+.portal-creditos__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.portal-creditos__tab--pendiente {
+  border-color: #fbbf24;
+
+  .portal-creditos__count {
+    background: #f59e0b;
+    color: #78350f;
+  }
+
+  &.portal-creditos__tab--active {
+    background: #fffbeb;
+    border-color: #f59e0b;
+    color: #92400e;
+  }
+}
+
+.portal-creditos__tab--aprobado {
+  border-color: #34d399;
+
+  .portal-creditos__count {
+    background: #10b981;
+    color: #fff;
+  }
+
+  &.portal-creditos__tab--active {
+    background: #ecfdf5;
+    border-color: #10b981;
+    color: #065f46;
+  }
+}
+
+.portal-creditos__tab--rechazado {
+  border-color: #f87171;
+
+  .portal-creditos__count {
+    background: #ef4444;
+    color: #fff;
+  }
+
+  &.portal-creditos__tab--active {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #991b1b;
+  }
+}
+
+.portal-creditos__list-empty,
+.portal-creditos__empty {
+  border-left: 5px solid #94a3b8;
+}
+
+.portal-creditos__list-empty {
+  margin: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  text-align: center;
+
+  strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+  }
+
+  p {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+}
+
+.portal-creditos__empty {
+  .portal-creditos__empty-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+}
+
+.portal-creditos__empty--pendiente {
+  border-left-color: #f59e0b;
+  background: linear-gradient(180deg, #fffbeb 0%, #fff 100%);
+}
+
+.portal-creditos__empty--aprobado {
+  border-left-color: #10b981;
+  background: linear-gradient(180deg, #ecfdf5 0%, #fff 100%);
+}
+
+.portal-creditos__empty--rechazado {
+  border-left-color: #ef4444;
+  background: linear-gradient(180deg, #fef2f2 0%, #fff 100%);
+}
+
+.portal-creditos__list-empty.portal-creditos__empty--pendiente {
+  border: 1px solid #fde68a;
+  border-left: 5px solid #f59e0b;
+  background: #fffbeb;
+
+  strong {
+    color: #92400e;
+  }
+}
+
+.portal-creditos__list-empty.portal-creditos__empty--aprobado {
+  border: 1px solid #a7f3d0;
+  border-left: 5px solid #10b981;
+  background: #ecfdf5;
+
+  strong {
+    color: #065f46;
+  }
+}
+
+.portal-creditos__list-empty.portal-creditos__empty--rechazado {
+  border: 1px solid #fecaca;
+  border-left: 5px solid #ef4444;
+  background: #fef2f2;
+
+  strong {
+    color: #991b1b;
+  }
+}

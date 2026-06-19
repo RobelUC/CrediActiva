@@ -1,9 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, delay, of, throwError } from 'rxjs';
+import { Observable, delay, map, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import type {
   Aportacion,
+  AportacionesFiltro,
+  AportacionesPaginadas,
   DashboardAdmin,
   EvaluarSolicitudRequest,
   ReporteAuditoria,
@@ -151,18 +153,78 @@ export class AdminService {
     );
   }
 
-  listarAportaciones(): Observable<Aportacion[]> {
+  listarAportaciones(filtro: AportacionesFiltro = {}): Observable<AportacionesPaginadas> {
+    const page = filtro.page ?? 1;
+    const pageSize = filtro.page_size ?? 10;
+    const dni = filtro.dni?.trim() || undefined;
+
     if (environment.modoSoloFrontend) {
-      return of([...MOCK_APORTACIONES]).pipe(delay(300));
+      let items = [...MOCK_APORTACIONES];
+      if (dni) {
+        items = items.filter((a) => a.dni_socio === dni);
+      }
+      const total = items.length;
+      const totalPages = total ? Math.ceil(total / pageSize) : 0;
+      const inicio = (page - 1) * pageSize;
+      return of({
+        items: items.slice(inicio, inicio + pageSize),
+        total,
+        page,
+        page_size: pageSize,
+        total_pages: totalPages,
+      }).pipe(delay(300));
     }
-    return this.http.get<Aportacion[]>(`${API}/aportaciones`);
+
+    const params: Record<string, string | number> = { page, page_size: pageSize };
+    if (dni) {
+      params['dni'] = dni;
+    }
+    return this.http
+      .get<AportacionesPaginadas | Aportacion[]>(`${API}/aportaciones`, { params })
+      .pipe(map((data) => this.normalizarAportacionesPaginadas(data, page, pageSize)));
   }
 
-  resumenAportaciones(): Observable<ResumenAportaciones> {
-    if (environment.modoSoloFrontend) {
-      return of({ ...MOCK_DASHBOARD.aportaciones }).pipe(delay(200));
+  private normalizarAportacionesPaginadas(
+    data: AportacionesPaginadas | Aportacion[],
+    page: number,
+    pageSize: number,
+  ): AportacionesPaginadas {
+    if (Array.isArray(data)) {
+      const total = data.length;
+      const totalPages = total ? Math.ceil(total / pageSize) : 0;
+      const inicio = (page - 1) * pageSize;
+      return {
+        items: data.slice(inicio, inicio + pageSize),
+        total,
+        page,
+        page_size: pageSize,
+        total_pages: totalPages,
+      };
     }
-    return this.http.get<ResumenAportaciones>(`${API}/aportaciones/resumen`);
+    return data;
+  }
+
+  resumenAportaciones(dni?: string): Observable<ResumenAportaciones> {
+    if (environment.modoSoloFrontend) {
+      const items = dni
+        ? MOCK_APORTACIONES.filter((a) => a.dni_socio === dni)
+        : MOCK_APORTACIONES;
+      const pagadas = items.filter((a) => a.estado === 'PAGADO');
+      const pendientes = items.filter((a) => a.estado === 'PENDIENTE');
+      const vencidas = items.filter((a) => a.estado === 'VENCIDO');
+      return of({
+        total: items.length,
+        pagadas: pagadas.length,
+        pendientes: pendientes.length,
+        vencidas: vencidas.length,
+        monto_pagado: pagadas.reduce((sum, a) => sum + a.monto_cuota, 0),
+        monto_pendiente: [...pendientes, ...vencidas].reduce((sum, a) => sum + a.monto_cuota, 0),
+        actualizado_en: new Date().toISOString(),
+      }).pipe(delay(200));
+    }
+
+    const params = dni ? { dni } : undefined;
+    return this.http.get<ResumenAportaciones>(`${API}/aportaciones/resumen`, { params });
   }
 
   registrarPago(idAportacion: string): Observable<Aportacion> {

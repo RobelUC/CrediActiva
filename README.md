@@ -352,6 +352,7 @@ ProyectoFinalWeb/
 |---------|-----------|
 | [`backend/README.md`](backend/README.md) | Arquitectura de microservicios y endpoints |
 | [`backend/docs/SUPABASE.md`](backend/docs/SUPABASE.md) | Guía de configuración de Supabase |
+| [`backend/docs/DESPLIEGUE.md`](backend/docs/DESPLIEGUE.md) | Publicar en Render (sin localhost) |
 | [`backend/docs/MODELO_BASE_DATOS.md`](backend/docs/MODELO_BASE_DATOS.md) | Modelo relacional 3FN |
 | [`src/app/components/credit-simulator/README.md`](src/app/components/credit-simulator/README.md) | Documentación del simulador |
 
