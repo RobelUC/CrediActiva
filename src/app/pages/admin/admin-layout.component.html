@@ -1,25 +1,86 @@
-<div class="admin-layout">
-  <aside class="admin-sidebar">
-    <a class="admin-sidebar__brand" routerLink="/">CREDI ACTIVA</a>
+<div class="admin-layout" [class.admin-layout--menu-abierto]="menuAbierto()">
+  <header class="admin-mobile-bar">
+    <button
+      type="button"
+      class="admin-mobile-bar__toggle"
+      [attr.aria-expanded]="menuAbierto()"
+      aria-controls="admin-sidebar"
+      aria-label="Abrir menú de navegación"
+      (click)="toggleMenu()"
+    >
+      <i class="bi" [class.bi-list]="!menuAbierto()" [class.bi-x-lg]="menuAbierto()"></i>
+    </button>
+
+    <a class="admin-mobile-bar__brand" routerLink="/" (click)="cerrarMenu()">
+      <img
+        class="admin-mobile-bar__logo"
+        src="assets/images/crediactiva-logo.png"
+        alt="CrediActiva"
+        width="36"
+        height="36"
+      />
+      <span>Panel administrativo</span>
+    </a>
+  </header>
+
+  @if (menuAbierto()) {
+    <button
+      type="button"
+      class="admin-sidebar__overlay"
+      aria-label="Cerrar menú"
+      (click)="cerrarMenu()"
+    ></button>
+  }
+
+  <aside
+    id="admin-sidebar"
+    class="admin-sidebar"
+    [class.admin-sidebar--abierto]="menuAbierto()"
+  >
+    <div class="admin-sidebar__header">
+      <a class="admin-sidebar__brand" routerLink="/" (click)="cerrarMenu()">
+        <img
+          class="admin-sidebar__logo"
+          src="assets/images/crediactiva-logo.png"
+          alt="CrediActiva"
+          width="44"
+          height="44"
+        />
+        <span class="admin-sidebar__brand-text">CREDI ACTIVA</span>
+      </a>
+      <button
+        type="button"
+        class="admin-sidebar__cerrar"
+        aria-label="Cerrar menú"
+        (click)="cerrarMenu()"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
     <p class="admin-sidebar__role">Panel administrativo</p>
 
     <nav class="admin-sidebar__nav">
-      <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <a
+        routerLink="/admin"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        (click)="cerrarMenu()"
+      >
         <i class="bi bi-speedometer2"></i> Dashboard general
       </a>
-      <a routerLink="/admin/socios" routerLinkActive="active">
+      <a routerLink="/admin/socios" routerLinkActive="active" (click)="cerrarMenu()">
         <i class="bi bi-people"></i> Gestión de socios
       </a>
-      <a routerLink="/admin/generar-credito" routerLinkActive="active">
+      <a routerLink="/admin/generar-credito" routerLinkActive="active" (click)="cerrarMenu()">
         <i class="bi bi-plus-circle"></i> Generar crédito
       </a>
-      <a routerLink="/admin/prestamos" routerLinkActive="active">
+      <a routerLink="/admin/prestamos" routerLinkActive="active" (click)="cerrarMenu()">
         <i class="bi bi-bank"></i> Módulo de préstamos
       </a>
-      <a routerLink="/admin/aportaciones" routerLinkActive="active">
+      <a routerLink="/admin/aportaciones" routerLinkActive="active" (click)="cerrarMenu()">
         <i class="bi bi-cash-coin"></i> Control de aportaciones
       </a>
-      <a routerLink="/admin/reportes" routerLinkActive="active">
+      <a routerLink="/admin/reportes" routerLinkActive="active" (click)="cerrarMenu()">
         <i class="bi bi-file-earmark-bar-graph"></i> Reportes y auditoría
       </a>
     </nav>

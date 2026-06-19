@@ -31,7 +31,7 @@
           <i class="bi bi-geo-alt-fill"></i>
           <div>
             <small>Sede</small>
-            <strong>Lima, Perú</strong>
+            <strong>{{ empresa.ciudad }}</strong>
           </div>
         </div>
       </div>
@@ -95,7 +95,7 @@
             <i class="bi bi-map"></i>
             <div>
               <strong>Ubicación referencial</strong>
-              <p class="mb-0">Av. Javier Prado Este 4200, San Borja — Lima</p>
+              <p class="mb-0">{{ empresa.direccionMapa }}</p>
             </div>
           </div>
           <p class="small text-muted mb-0 mt-3">
@@ -163,7 +163,7 @@
           <strong>¿Necesita ayuda urgente?</strong>
           <p class="mb-0 small">
             Para bloqueo de acceso o reporte de fraude, llame de inmediato al
-            <a href="tel:+516124500">(01) 612-4500</a> opción 9, disponible 24/7.
+            <a [href]="empresa.telefonoUrgenteEnlace">{{ empresa.telefonoUrgente }}</a> opción 9, disponible 24/7.
           </p>
         </div>
       </div>

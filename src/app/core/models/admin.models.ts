@@ -71,6 +71,10 @@ export interface SocioUpdate {
   activo: boolean;
 }
 
+export interface SocioPasswordUpdate {
+  password: string;
+}
+
 export interface CuotaCronograma {
   numero_cuota: number;
   fecha_vencimiento: string;

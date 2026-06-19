@@ -14,6 +14,7 @@ import type {
   ResumenSolicitudes,
   Socio,
   SocioCreate,
+  SocioPasswordUpdate,
   SocioUpdate,
   SolicitudAdmin,
 } from '../models/admin.models';
@@ -92,6 +93,17 @@ export class AdminService {
       return of(actualizado).pipe(delay(400));
     }
     return this.http.put<Socio>(`${API}/socios/${idSocio}`, datos);
+  }
+
+  cambiarPasswordSocio(idSocio: string, datos: SocioPasswordUpdate): Observable<Socio> {
+    if (environment.modoSoloFrontend) {
+      const idx = this.sociosDemo.findIndex((s) => s.id_socio === idSocio);
+      if (idx < 0) {
+        return throwError(() => ({ error: { detail: 'Socio no encontrado.' } }));
+      }
+      return of({ ...this.sociosDemo[idx] }).pipe(delay(300));
+    }
+    return this.http.patch<Socio>(`${API}/socios/${idSocio}/password`, datos);
   }
 
   eliminarSocio(idSocio: string): Observable<Socio> {
